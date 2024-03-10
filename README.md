@@ -7,13 +7,13 @@ Code is available and free for academic users. Commercial users should contact A
 This simplified version of the flowcytoscript (Crossentropy test) is intended to be usable by people with little to no experience in programming. All inputs are via plain language prompts in an RStudio markdown notebook. All outputs are organized in folders as before, but additionally an HTML document summarizing the results is created with each analysis. Check out "flowcytoscript.nb.html" for an example of the output.
 
 ##Features
-*Clustering with histograms of expression, barcharts and tables of frequencies
-*Automated cluster identification
-*tSNE and UMAP
-*PCA on MFIs to show sample-level differences
-*Crossentropy testing on tSNE and UMAP
-*Statistical testing on markers and clusters
-*Heatmaps, dendrograms
+* Clustering with histograms of expression, barcharts and tables of frequencies
+* Automated cluster identification
+* tSNE and UMAP
+* PCA on MFIs to show sample-level differences
+* Crossentropy testing on tSNE and UMAP
+* Statistical testing on markers and clusters
+* Heatmaps, dendrograms
 
 ##Improvements
 *Speed. Optimizations throughout should render this approximately 10x faster, although this will vary depending on multithreading.
