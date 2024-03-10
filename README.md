@@ -29,8 +29,8 @@ In your favorite flow cytometry data analysis program (FlowJo, FCS Express), gat
 
 To export your data in CSV format, preserving the transformations from FlowJo, see the instructions in "Exporting data in csv format.PNG". For more, see https://docs.flowjo.com/flowjo/graphs-and-gating/gw-transform-overview/
 
-Automated cluster identification adapted from sc-type by IanevskiAleksandr for scRNA-Seq data.
-https://github.com/IanevskiAleksandr/sc-type
+Automated cluster identification adapted from [sc-type](https://github.com/IanevskiAleksandr/sc-type) by IanevskiAleksandr for scRNA-Seq data.
+
 Create a folder for your analysis (preferably not in Dropbox or OneDrive). In this folder, put these items: A copy of flowcytoscript.Rmd A copy of 00_source_files Your files, inside a folder called “Data” Double click on the flowcytoscript file to open it in Rstudio. Run each code chunk in order by clicking on the green arrow in the upper right corner of the chunk.
 
 Read through the presentation "Simplified flowcytoscript--instructions for use.pptx" for more detail.
