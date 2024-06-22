@@ -18,12 +18,12 @@ This simplified version of the flowcytoscript (Crossentropy test) is intended to
 ## Improvements
 * Speed. Optimizations throughout should render this approximately 10x faster, although this will vary depending on multithreading.
 * Both FCS and CSV files are accepted as input types.
-* FCS data are automatically transformed as best befits the cytometer used. This avoids potentially serious issues with scaling of the data by inexperienced users.
+* FCS data are automatically transformed as best befits the cytometer used. This avoids potentially serious issues with scaling of the data by inexperienced users. At present, only a few flow cytometers are supported: Aurora, ID7000, Fortessa, Symphony. If you are using a different cytometer, contact me.
 * Clustering can be performed using Phenograph or FlowSOM (via EmbedSOM).
-* Clusters are automatically identified and named via matching to a cell type database.
+* Clusters are automatically identified and named via matching to a cell type database. Take this with a grain of salt and check the results.
 * tSNE performed in line with OptSNE modifications to learning rate.
 
-Using the script: Install R, Rstudio and Rtools. For Mac, you’ll need command line tools and OpenMP. The flowcytoscript_setup.r script (in 00_source_files) can be used to facilitate set-up for new users of R.
+Using the script: Install R, Rstudio and Rtools. For Mac, you’ll need command line tools and OpenMP. The flowcytoscript_setup.r script (in 00_source_files) can be used to facilitate set-up for new users of R. Installation for Mac is difficult due to OpenMP and a Mac-specific version is in progress.
 
 In your favorite flow cytometry data analysis program (FlowJo, FCS Express), gate on the cells you wish to analyze and export those cells in new fcs or csv files. While exporting, adding group or variable tags to the file names will help you sort the files with the script.
 
@@ -36,3 +36,6 @@ Create a folder for your analysis (preferably not in Dropbox or OneDrive). In th
 Read through the presentation "Simplified flowcytoscript--instructions for use.pptx" for more detail.
 
 Original publication on the [Crossentropy test](https://www.cell.com/cell-reports-methods/pdfExtended/S2667-2375(22)00295-8)
+
+## Errors and bug reports
+* Please save a copy of the notebook. This will produce an HTML document recording your entries and will facilitate troubleshooting.
