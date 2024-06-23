@@ -33,7 +33,7 @@ Automated cluster identification adapted from [sc-type](https://github.com/Ianev
 
 Create a folder for your analysis (preferably not in Dropbox or OneDrive). In this folder, put these items: A copy of flowcytoscript.Rmd A copy of 00_source_files Your files, inside a folder called “Data” Double click on the flowcytoscript file to open it in Rstudio. Run each code chunk in order by clicking on the green arrow in the upper right corner of the chunk.
 
-Read through the presentation "Simplified flowcytoscript--instructions for use.pptx" for more detail.
+Read through the presentation "Simplified flowcytoscript--instructions for use.pptx" for more detail, or watch the tutorial videos on [YouTube](https://www.youtube.com/watch?v=6x3Gwyf7-ww&t=3s).
 
 Original publication on the [Crossentropy test](https://www.cell.com/cell-reports-methods/pdfExtended/S2667-2375(22)00295-8)
 
