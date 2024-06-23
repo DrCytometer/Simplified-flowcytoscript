@@ -35,7 +35,7 @@ Create a folder for your analysis (preferably not in Dropbox or OneDrive). In th
 
 Read through the presentation "Simplified flowcytoscript--instructions for use.pptx" for more detail, or watch the tutorial videos on [YouTube](https://www.youtube.com/watch?v=6x3Gwyf7-ww&t=3s).
 
-For sample data and a demo analysis that you can try to recreate, download data from [Dropbox](https://www.dropbox.com/scl/fo/s9h6z1k3rvliczv08uk6c/AGFFDoxnF1ttcZ7lTvddAQQ?rlkey=d3b224522jgq9g3rds8bnb3s9&dl=0)
+For sample data and a demo analysis that you can try to recreate, visit [Dropbox](https://www.dropbox.com/scl/fo/s9h6z1k3rvliczv08uk6c/AGFFDoxnF1ttcZ7lTvddAQQ?rlkey=d3b224522jgq9g3rds8bnb3s9&dl=0).
 
 Original publication on the [Crossentropy test](https://www.cell.com/cell-reports-methods/pdfExtended/S2667-2375(22)00295-8)
 
