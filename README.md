@@ -1,4 +1,5 @@
-# Simplified-flowcytoscript
+# Simplified-flowcytoscript for Mac users
+Mac-compatible version. For Windows, you'll be better off with the script on the Main branch.
 A simplified, semi-automated high parameter workflow for people who don't know how to code. High dimensional flow cytometry analysis.
 A simplified complete workflow in R for analysis of high parameter flow cytometry data including the Crossentropy method.
 
@@ -16,14 +17,15 @@ This simplified version of the flowcytoscript (Crossentropy test) is intended to
 * Heatmaps, dendrograms
 
 ## Improvements
-* Speed. Optimizations throughout should render this approximately 10x faster, although this will vary depending on multithreading.
+* Mac-compatible. This version uses
+* Speed. Optimizations throughout, although speed will vary depending on multithreading. This version will be slower than the Windows version, generally, because the requirement for OpenMP (difficult to install) was removed, so some parts are not parallelized. Phenograph in particular may be slow with large datasets.
 * Both FCS and CSV files are accepted as input types.
-* FCS data are automatically transformed as best befits the cytometer used. This avoids potentially serious issues with scaling of the data by inexperienced users. At present, only a few flow cytometers are supported: Aurora, ID7000, Fortessa, Symphony. If you are using a different cytometer, contact me.
+* FCS data are automatically transformed as best befits the cytometer used. This avoids potentially serious issues with scaling of the data by inexperienced users. At present, only a few flow cytometers are supported: Aurora, ID7000, Fortessa, Symphony, Cytof (Helios) and FACSDiscoverS8. Note that S8 data is FCS3.2 format, which is not fully supported by FlowCore. I've not had issues apart from warning messages. If you are using a different cytometer, contact me. Transformation for Cytof data is Arcsinh while flow cytometry data will be with biexponential.
 * Clustering can be performed using Phenograph or FlowSOM (via EmbedSOM).
 * Clusters are automatically identified and named via matching to a cell type database. Take this with a grain of salt and check the results.
 * tSNE performed in line with OptSNE modifications to learning rate.
 
-Using the script: Install R, Rstudio and Rtools. For Mac, you’ll need command line tools and OpenMP. The flowcytoscript_setup.r script (in 00_source_files) can be used to facilitate set-up for new users of R. Installation for Mac is difficult due to OpenMP and a Mac-specific version is in progress.
+Using the script: Install R and RStudio. Required packages will be installed/updated when the script is initiated.
 
 In your favorite flow cytometry data analysis program (FlowJo, FCS Express), gate on the cells you wish to analyze and export those cells in new fcs or csv files. While exporting, adding group or variable tags to the file names will help you sort the files with the script.
 
