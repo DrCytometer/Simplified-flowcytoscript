@@ -1,5 +1,6 @@
 # Simplified-flowcytoscript for Mac users
 Mac-compatible version. For Windows, you'll be better off with the script on the Main branch.
+
 A simplified, semi-automated high parameter workflow for people who don't know how to code. High dimensional flow cytometry analysis.
 A simplified complete workflow in R for analysis of high parameter flow cytometry data including the Crossentropy method.
 
