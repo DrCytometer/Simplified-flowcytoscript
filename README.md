@@ -1,4 +1,6 @@
 # Simplified-flowcytoscript
+This version works best for Windows. For Mac, see the MacVersion branch.
+
 A simplified, semi-automated high parameter workflow for people who don't know how to code. High dimensional flow cytometry analysis.
 A simplified complete workflow in R for analysis of high parameter flow cytometry data including the Crossentropy method.
 
@@ -23,7 +25,7 @@ This simplified version of the flowcytoscript (Crossentropy test) is intended to
 * Clusters are automatically identified and named via matching to a cell type database. Take this with a grain of salt and check the results.
 * tSNE performed in line with OptSNE modifications to learning rate.
 
-Using the script: Install R, Rstudio and Rtools. For Mac, you’ll need command line tools and OpenMP. The flowcytoscript_setup.r script (in 00_source_files) can be used to facilitate set-up for new users of R. Installation for Mac is difficult due to OpenMP and a Mac-specific version is in progress.
+Using the script: Install R, Rstudio and Rtools. To use this version with Mac, you’ll need command line tools and OpenMP. The flowcytoscript_setup.r script (in 00_source_files) can be used to facilitate set-up for new users of R. Installation for Mac is difficult due to OpenMP and the Mac-specific version (see branch MacVersion) avoids this, with some loss in speed.
 
 In your favorite flow cytometry data analysis program (FlowJo, FCS Express), gate on the cells you wish to analyze and export those cells in new fcs or csv files. While exporting, adding group or variable tags to the file names will help you sort the files with the script.
 
@@ -41,3 +43,4 @@ Original publication on the [Crossentropy test](https://www.cell.com/cell-report
 
 ## Errors and bug reports
 * Please save a copy of the notebook. This will produce an HTML document recording your entries and will facilitate troubleshooting.
+* If you've run the script and encountered errors, you will likely need to start the analysis over in a new folder to avoid error propagation. Alternatively, delete the cache files (tsne_cache, umap_cache).
