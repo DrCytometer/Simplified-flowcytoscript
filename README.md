@@ -47,35 +47,50 @@ For CyTOF (Helios) data, ArcSinh with a co-factor of 5 is used.
 
 For flow cytometry data, a FlowJo biexponential is used with the following co-efficients:
 Aurora:
-```width.basis <- -1000
-    max.value <- 4194303
-    log.decades <- 5.5
+```
+width.basis <- -1000
+max.value <- 4194303
+log.decades <- 5.5
 ```
 ID7000:
-```width.basis <- -500
-    max.value <- 1000000
-    log.decades <- 5
+```
+width.basis <- -500
+max.value <- 1000000
+log.decades <- 5
 ```
 FACSDiscoverS8:
-```width.basis <- -1000
-    max.value <- 3162277.6602
-    log.decades <- 5
+```
+width.basis <- -1000
+max.value <- 3162277.6602
+log.decades <- 5
 ```
 ZE5:
-```width.basis <- -50
-    max.value <- 262144
-    log.decades <- 4.42
+```
+width.basis <- -50
+max.value <- 262144
+log.decades <- 4.42
 ```
 Others are transformed with coeffients appropriate for the BD Fortessa or Symphony:
-```width.basis <- -100
-    max.value <- 262144
-    log.decades <- 4.5
+```
+width.basis <- -100
+max.value <- 262144
+log.decades <- 4.5
 ```
 
 These values are selected as they represent more or less a default view of the data on the cytometer. The appropriateness
 of these transforms assumes you've optimized your panel by visually inspecting the staining and adjusting marker
 intensity/separation based on what you can see. These transforms will be best for panels that are relatively large for
 the cytometer.
+
+## FACSDiscoverS8 notes
+The BD FACSDiscoverS8 produces FCS3.2 files, and FlowCore does not yet provide full support for this format. You will
+get warning messages to this effect. I've yet to experience any actual problems.
+
+The S8 files contain hundreds of parameters, most of which are probably irrelevant to your analysis. To simplify things,
+the script automatically selects the SpectralFX-unmixed channels, discarding the raw, OLS unmixed and imaging parameters. 
+As such, you can export all channels or all compensated channels from FlowJo. Some of the marker names (if they contain spaces)
+will be truncated, though, and you'll have to edit these. If you have multiple channels that truncate to become identical (e.g.,
+TCR beta -> TCR and TCR gd -> TCR), these will be listed in the same order they appear in the FCS file in your analysis software.
 
 ## Errors and bug reports
 * Please save a copy of the notebook. This will produce an HTML document recording your entries and will facilitate troubleshooting.
