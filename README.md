@@ -49,23 +49,28 @@ For flow cytometry data, a FlowJo biexponential is used with the following co-ef
 Aurora:
 ```width.basis <- -1000
     max.value <- 4194303
-    log.decades <- 5.5```
+    log.decades <- 5.5
+```
 ID7000:
 ```width.basis <- -500
     max.value <- 1000000
-    log.decades <- 5```
+    log.decades <- 5
+```
 FACSDiscoverS8:
 ```width.basis <- -1000
     max.value <- 3162277.6602
-    log.decades <- 5```
+    log.decades <- 5
+```
 ZE5:
 ```width.basis <- -50
     max.value <- 262144
-    log.decades <- 4.42```
+    log.decades <- 4.42
+```
 Others are transformed with coeffients appropriate for the BD Fortessa or Symphony:
 ```width.basis <- -100
     max.value <- 262144
-    log.decades <- 4.5```
+    log.decades <- 4.5
+```
 
 These values are selected as they represent more or less a default view of the data on the cytometer. The appropriateness
 of these transforms assumes you've optimized your panel by visually inspecting the staining and adjusting marker
