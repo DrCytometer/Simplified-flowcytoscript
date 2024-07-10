@@ -20,7 +20,7 @@ This simplified version of the flowcytoscript (Crossentropy test) is intended to
 ## Improvements
 * Speed. Optimizations throughout should render this approximately 10x faster, although this will vary depending on multithreading.
 * Both FCS and CSV files are accepted as input types.
-* FCS data are automatically transformed as best befits the cytometer used. This avoids potentially serious issues with scaling of the data by inexperienced users. At present, only a few flow cytometers are supported: Aurora, ID7000, Fortessa, Symphony. If you are using a different cytometer, contact me.
+* FCS data are automatically transformed as best befits the cytometer used. This avoids potentially serious issues with scaling of the data by inexperienced users. At present, only a few flow cytometers are supported: Aurora, ID7000, FACSDiscoverS8, Bio-Rad ZE5 (Yeti), Fortessa, Symphony. If you are using a different cytometer, contact me.
 * Clustering can be performed using Phenograph or FlowSOM (via EmbedSOM).
 * Clusters are automatically identified and named via matching to a cell type database. Take this with a grain of salt and check the results.
 * tSNE performed in line with OptSNE modifications to learning rate.
@@ -40,6 +40,37 @@ Read through the presentation "Simplified flowcytoscript--instructions for use.p
 For sample data and a demo analysis that you can try to recreate, visit [Dropbox](https://www.dropbox.com/scl/fo/s9h6z1k3rvliczv08uk6c/AGFFDoxnF1ttcZ7lTvddAQQ?rlkey=d3b224522jgq9g3rds8bnb3s9&dl=0).
 
 Original publication on the [Crossentropy test](https://www.cell.com/cell-reports-methods/pdfExtended/S2667-2375(22)00295-8)
+
+## Transformation details
+For CyTOF (Helios) data, ArcSinh with a co-factor of 5 is used. 
+```arcsinhTransform(a=1, b=1/5, c=0)```
+
+For flow cytometry data, a FlowJo biexponential is used with the following co-efficients:
+Aurora:
+```width.basis <- -1000
+    max.value <- 4194303
+    log.decades <- 5.5```
+ID7000:
+```width.basis <- -500
+    max.value <- 1000000
+    log.decades <- 5```
+FACSDiscoverS8:
+```width.basis <- -1000
+    max.value <- 3162277.6602
+    log.decades <- 5```
+ZE5:
+```width.basis <- -50
+    max.value <- 262144
+    log.decades <- 4.42```
+Others are transformed with coeffients appropriate for the BD Fortessa or Symphony:
+```width.basis <- -100
+    max.value <- 262144
+    log.decades <- 4.5```
+
+These values are selected as they represent more or less a default view of the data on the cytometer. The appropriateness
+of these transforms assumes you've optimized your panel by visually inspecting the staining and adjusting marker
+intensity/separation based on what you can see. These transforms will be best for panels that are relatively large for
+the cytometer.
 
 ## Errors and bug reports
 * Please save a copy of the notebook. This will produce an HTML document recording your entries and will facilitate troubleshooting.
