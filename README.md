@@ -71,7 +71,7 @@ width.basis <- -50
 max.value <- 262144
 log.decades <- 4.42
 ```
-Others are transformed with coeffients appropriate for the BD Fortessa or Symphony:
+Others are transformed with coefficients appropriate for the BD Fortessa or Symphony:
 ```
 width.basis <- -100
 max.value <- 262144
@@ -95,4 +95,5 @@ TCR beta -> TCR and TCR gd -> TCR), these will be listed in the same order they 
 
 ## Errors and bug reports
 * Please save a copy of the notebook. This will produce an HTML document recording your entries and will facilitate troubleshooting.
-* If you've run the script and encountered errors, you will likely need to start the analysis over in a new folder to avoid error propagation. Alternatively, delete the cache files (tsne_cache, umap_cache).
+* If you've run the script and encountered errors, you will likely need to start the analysis over in a new folder to
+* avoid error propagation. Alternatively, delete the cache files (tsne_cache, umap_cache).
