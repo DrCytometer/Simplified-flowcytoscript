@@ -46,6 +46,7 @@ For CyTOF (Helios) data, ArcSinh with a co-factor of 5 is used.
 ```arcsinhTransform(a=1, b=1/5, c=0)```
 
 For flow cytometry data, a FlowJo biexponential is used with the following co-efficients:
+
 Aurora:
 ```
 width.basis <- -1000
