@@ -30,6 +30,10 @@ groups.to.correct <- multi.menu( fcs.condition, title = "Do you need to correct 
 
 if (length(groups.to.correct)>1){
   group.correction <- 1
+} else if( groups.to.correct != 0 ) { 
+  group.correction <- 1
+} else {
+  group.correction <- 0
 }
 
 while (group.correction != 0) {
