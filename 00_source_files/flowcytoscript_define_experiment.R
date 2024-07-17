@@ -29,12 +29,28 @@ fcs.condition <- unlist(strsplit(input.group.names, split = ","))
 groups.to.correct <- multi.menu( fcs.condition, title = "Do you need to correct any of the group names? ")
 groups.to.correct <- as.numeric(groups.to.correct)
 
-while (groups.to.correct != 0) {
+if (length(groups.to.correct)>1){
+  group.correction <- 1
+} else if( groups.to.correct != 0 ) { 
+  group.correction <- 1
+} else {
+  group.correction <- 0
+}
+
+while (group.correction != 0) {
   for (group.n in groups.to.correct) {
     input.group.names[group.n] <- readline( paste0("Please enter the identifier label for Group ", group.n, ": " ))
     fcs.condition <- unlist(strsplit(input.group.names, split = ","))
-    groups.to.correct <- multi.menu( fcs.condition, title = "Do you need to correct any of the group names? ")
-    groups.to.correct <- as.numeric(groups.to.correct)
+  }
+  
+  groups.to.correct <- multi.menu( fcs.condition, title = "Do you need to correct any of the group names? ")
+  
+  if (length(groups.to.correct)>1){
+    group.correction <- 1
+  } else if (groups.to.correct !=0){
+    group.correction <- 1
+  } else {
+    group.correction <- 0
   }
 }
 
