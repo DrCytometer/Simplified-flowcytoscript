@@ -129,6 +129,11 @@ if (input.file.type == 2){
   channels <- data.frame(name = unname(pData(parameters(flowFrame))$name), 
                          desc = unname(pData(parameters(flowFrame))$desc))
   
+  # exception for odd Cytof files
+  if( is.null( flowFrame@description$'$CYT') ){
+    flowFrame@description$'$CYT' <- "CYTOF"
+  }
+
   # if data are from the ID7000, truncate channel names to marker only, remove Height and Width
 
   if( flowFrame@description$`$CYT` == "ID7000" ){
