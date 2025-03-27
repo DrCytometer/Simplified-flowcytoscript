@@ -4,6 +4,8 @@ This version works best for Windows. For Mac, see the MacVersion branch.
 A simplified, semi-automated high parameter workflow for people who don't know how to code. High dimensional flow cytometry analysis.
 A simplified complete workflow in R for analysis of high parameter flow cytometry data including the Crossentropy method.
 
+You may wish to check out Peter Leary's MARMOT pipeline[https://github.com/peterleary/MARMOT].
+
 Code is available and free for academic users. Commercial users should contact Adrian Liston to discuss licensing options.
 
 This simplified version of the flowcytoscript (Crossentropy test) is intended to be usable by people with little to no experience in programming. All inputs are via plain language prompts in an RStudio markdown notebook. All outputs are organized in folders as before, but additionally an HTML document summarizing the results is created with each analysis. Check out "flowcytoscript.nb.html" for an example of the output.
