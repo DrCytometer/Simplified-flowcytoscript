@@ -4,7 +4,7 @@ This version works best for Windows. For Mac, see the MacVersion branch.
 A simplified, semi-automated high parameter workflow for people who don't know how to code. High dimensional flow cytometry analysis.
 A simplified complete workflow in R for analysis of high parameter flow cytometry data including the Crossentropy method.
 
-You may wish to check out Peter Leary's MARMOT pipeline[https://github.com/peterleary/MARMOT].
+You may wish to check out Peter Leary's MARMOT pipeline [https://github.com/peterleary/MARMOT].
 
 Code is available and free for academic users. Commercial users should contact Adrian Liston to discuss licensing options.
 
