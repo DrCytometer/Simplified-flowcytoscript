@@ -675,7 +675,8 @@ dmrd.data.long <- pivot_longer(data.frame( dmrd.data ), cols = everything(),
 
 #plot histograms of channels
 ## changed to allow plotting of CSV data as well
-if ( grepl("CYTOF|HELIOS", flowFrame@description$`$CYT`) == TRUE ){
+if ( input.file.type == 2 ) {
+  if ( grepl("CYTOF|HELIOS", flowFrame@description$`$CYT`) == TRUE ){
   transformation.plot <- ggplot( dmrd.data.long, 
                                  aes(x = value, y = after_stat(count) ))+
     geom_density(fill='black', alpha = 0.4) +
@@ -683,6 +684,7 @@ if ( grepl("CYTOF|HELIOS", flowFrame@description$`$CYT`) == TRUE ){
     facet_wrap(~parameter, scales = "free")+
     coord_cartesian(xlim = c(0,12))+
     xlab("Channel")
+  }
 } else {
   transformation.plot <- ggplot( dmrd.data.long, 
                                  aes(x = value, y = after_stat(count) ))+
