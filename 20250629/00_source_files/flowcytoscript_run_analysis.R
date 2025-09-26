@@ -1,0 +1,740 @@
+#Run the analysis
+
+analysis.start.time <- Sys.time()
+
+# plot heatmaps---------------
+cat("Plotting heatmaps\n")
+
+heatmap.type <- c( "by_condition", "by_sample", "by_cluster" )
+
+for ( ht in heatmap.type )
+{
+  if ( ht == "by_condition" ) {
+    flow.data.group.median <- apply( dmrd.data, 2, tapply, 
+                                     dmrd.event.condition, median )
+    margin.col <- fcs.heatmap.label.factor.col * 
+      max( nchar( fcs.condition.label ) )
+    group.label <- fcs.condition.label
+    group.color <- fcs.condition.color
+  }
+  else if ( ht == "by_sample" ) {
+    flow.data.group.median <- apply( dmrd.data, 2, tapply, 
+                                     dmrd.event.sample, median )
+    margin.col <- fcs.heatmap.label.factor.col * 
+      max( nchar( flow.sample.label ) )
+    group.label <- flow.sample.label
+    group.color <- flow.sample.color
+  }
+  else if ( ht == "by_cluster" ) {
+    flow.data.group.median <- apply( dmrd.data, 2, tapply, 
+                                     dmrd.event.cluster, median )
+    margin.col <- fcs.heatmap.label.factor.col * 
+      max( nchar( fcs.cluster.label ) )
+    group.label <- fcs.cluster.label
+    group.color <- fcs.cluster.color
+  }
+  else
+    stop( "wrong heatmap type" )
+  
+  margin.row <- 
+    fcs.heatmap.label.factor.row * max( nchar( fcs.channel.label ) )
+  
+  if ( margin.row < 5 )
+    margin.row <- 5
+  if ( margin.col < 5 )
+    margin.col <- 5
+  
+  jpeg( filename = file.path( fcs.heatmap.figure.dir, 
+                             sprintf( "%s_%s.jpg", fcs.heatmap.figure, ht ) ), 
+       width = fcs.heatmap.width, height = fcs.heatmap.height )
+  heatmap( t( flow.data.group.median ), scale = "row", 
+           labRow = fcs.channel.label,  labCol = group.label, 
+           col = fcs.heatmap.palette, ColSideColors = group.color, 
+           cexRow = fcs.heatmap.font.size, cexCol = fcs.heatmap.font.size, 
+           margins = c( margin.col, margin.row ) )
+  dev.off()
+}
+
+
+# plot histograms---------------
+cat("Plotting histograms of cluster frequency\n")
+
+histogram.type <- c( "by_cluster", "by_sample", "by_assay" )
+
+condition.sample.n <- as.vector( table( flow.sample.condition ) )
+
+dmrd.event.sample.n <- as.numeric( table( dmrd.event.sample ) )
+
+for ( ht in histogram.type )
+{
+  flow.data.cluster.fraction <- lapply( fcs.cluster, function( fc ) {
+    sample.event.n <- as.vector( table( 
+      dmrd.event.sample[ dmrd.event.cluster == fc ] ) )
+    
+    if ( ht == "by_cluster" )
+    {
+      sample.fraction <- log2( 
+        ( sample.event.n / dmrd.event.cluster.n[ fc ] ) / 
+          ( dmrd.event.sample.n / dmrd.event.n ) 
+      )
+      sample.fraction[ is.infinite( sample.fraction ) ] <- NA
+      fraction <- tapply( sample.fraction, flow.sample.condition, mean, 
+                          na.rm = TRUE )
+      std.err <- tapply( sample.fraction, flow.sample.condition, sd, 
+                         na.rm = TRUE ) / sqrt( condition.sample.n )
+    }
+    else if ( ht == "by_sample" )
+    {
+      sample.fraction <- 100 * sample.event.n / dmrd.event.sample.n
+      fraction <- tapply( sample.fraction, flow.sample.condition, mean, 
+                          na.rm = TRUE )
+      std.err <- tapply( sample.fraction, flow.sample.condition, sd, 
+                         na.rm = TRUE ) / sqrt( condition.sample.n )
+    }
+    else if ( ht == "by_assay" )
+    {
+      sample.fraction <- 100 * sample.event.n / dmrd.event.n
+      fraction <- tapply( sample.fraction, flow.sample.condition, sum, 
+                          na.rm = TRUE )
+      std.err <- NA
+    }
+    else
+      stop( "wrong histogram type" )
+    
+    data.frame( cluster = fc, condition = fcs.condition, fraction, std.err )
+  } )
+  
+  flow.data.cluster.fraction <- do.call( rbind, flow.data.cluster.fraction )
+  flow.data.cluster.fraction$condition <- factor( 
+    flow.data.cluster.fraction$condition, levels = fcs.condition )
+  
+  histogram.plot <- ggplot( flow.data.cluster.fraction, 
+                            aes( x = cluster, y = fraction, fill = condition ) ) + 
+    geom_bar( stat = "identity", position = position_dodge2() ) + 
+    geom_errorbar( aes( ymin = fraction - std.err, 
+                        ymax = fraction + std.err ), 
+                   linewidth = fcs.histogram.error.bar.size,
+                   position = position_dodge2() ) + 
+    scale_x_discrete( labels = fcs.cluster.label, name = "" ) + 
+    scale_fill_manual( values = fcs.condition.color, 
+                       limits = fcs.condition, breaks = fcs.condition, 
+                       labels = fcs.condition.label ) + 
+    theme_bw() + 
+    theme( 
+      axis.text = element_text( size = fcs.histogram.font.size, 
+                                angle = 90 ), 
+      axis.title = element_text( size = fcs.histogram.font.size + 1 ), 
+      legend.title = element_blank(), 
+      legend.text = element_text( size = fcs.histogram.font.size + 1 ), 
+      legend.key.size = unit( fcs.histogram.legend.key.size, "lines" ), 
+      panel.grid.major = element_blank(), 
+      panel.grid.minor = element_blank() 
+    )
+  
+  if ( ht == "by_cluster" )
+    histogram.plot <- histogram.plot + 
+    ylab( "Average log2( frequency ratio )" )
+  else if ( ht == "by_sample" )
+    histogram.plot <- histogram.plot + ylab( "Average frequency" )
+  else if ( ht == "by_assay" )
+    histogram.plot <- histogram.plot + ylab( "Frequency" )
+  
+  ggsave( 
+    file.path( fcs.histogram.figure.dir, 
+               sprintf( "%s_%s.jpg", fcs.histogram.figure, ht ) ), 
+    histogram.plot, 
+    width = fcs.histogram.width, 
+    height = fcs.histogram.height + 
+      fcs.histogram.label.factor.height * 
+      max( nchar( fcs.cluster.label ) ) 
+  )
+}
+
+
+# run pca on median values for each marker for each sample------------
+cat("Running PCA on MFIs\n")
+
+flow.data.group.median <- data.frame(apply( dmrd.data, 2, tapply, 
+                                            dmrd.event.sample, median ))
+
+pca.mfi.result <- prcomp(flow.data.group.median)
+
+# add labels and extract coordinates
+flow.data.group.median$Sample <- rownames(flow.data.group.median)
+flow.data.group.median$sample.color <- flow.sample.color[flow.data.group.median$Sample]
+flow.data.group.median$Group <- flow.sample.condition[flow.data.group.median$Sample]
+flow.data.group.median[ , c("PC1", "PC2")] <- pca.mfi.result$x[, 1:2]
+pca.mfi.loadings <- data.frame(pca.mfi.result$rotation)
+pca.mfi.loadings$var <- rownames(pca.mfi.result$rotation)
+mfi.scaling.loadings <- max(abs( flow.data.group.median[,c("PC1", "PC2")] )) / max( abs(pca.mfi.loadings[, 1:2])) / 2
+pca.mfi.loadings[, 1:2] <- pca.mfi.loadings[, 1:2] * mfi.scaling.loadings
+pc.mfi.variance <- summary(pca.mfi.result)
+pc.mfi.variance <- data.frame(pc.mfi.variance$importance)
+pc1.mfi.proportion <- pc.mfi.variance[2,1]*100
+pc2.mfi.proportion <- pc.mfi.variance[2,2]*100
+
+# plot pca on markers with loadings
+pca.marker.var.plot <- ggplot(data = flow.data.group.median, 
+                              aes(PC1, PC2, col = Group )) +
+  geom_point( size = pca.point.size ) +
+  scale_color_manual( values = fcs.condition.color,
+                      breaks = fcs.condition,
+                      labels = fcs.condition.label)+
+  geom_segment( inherit.aes = FALSE, data = pca.mfi.loadings, 
+                aes(x = 0, y = 0, xend = PC1, yend = PC2 ),
+                color = "black", linewidth = pca.loading.arrow.size, 
+                arrow = arrow(length = unit(0.03, "npc")) ) +
+  geom_label( inherit.aes = FALSE, data = pca.mfi.loadings, 
+              aes(PC1 * 1.2, PC2 * 1.2, label = var ), 
+              size = pca.loading.text.size,
+              label.size = pca.loading.label.size ) +
+  xlab(paste( "PC1 (", pc1.mfi.proportion, "%)", sep = "" )) +
+  ylab(paste( "PC2 (", pc2.mfi.proportion, "%)", sep = "" )) +
+  theme_bw() +
+  theme( panel.grid = element_blank(), legend.title = element_blank() )
+
+ggsave(filename = file.path( fcs.pca.figure.dir, 
+                             paste0( pca.figure.mfi, "_loadings.jpg" )),
+       pca.marker.var.plot, width = fcs.pca.figure.width, height = fcs.pca.figure.height )
+
+# plot pca on markers without loadings
+pca.marker.sample.plot <- ggplot(data = flow.data.group.median, 
+                                 aes(PC1, PC2, col = Group)) +
+  geom_point(size = pca.point.size ) +
+  scale_color_manual( values = fcs.condition.color,
+                      breaks = fcs.condition,
+                      labels = fcs.condition.label)+
+  xlab(paste( "PC1 (", pc1.mfi.proportion, "%)", sep = "" )) +
+  ylab(paste( "PC2 (", pc2.mfi.proportion, "%)", sep = "" ))+
+  theme_bw() +
+  theme(panel.grid = element_blank(), legend.title = element_blank())
+
+ggsave(filename = file.path( fcs.pca.figure.dir, 
+                             paste( pca.figure.mfi, "_samples.jpg" )),
+       pca.marker.sample.plot, width = fcs.pca.figure.width, height = fcs.pca.figure.height )
+
+# calculate inter-group distances for marker PCA-------------
+
+group.mfi.pca.data <- data.frame(pca.mfi.result$x)
+group.mfi.pca.data$Group <- flow.sample.condition[flow.data.group.median$Sample]
+group.mfi.pca.data$Group <- fcs.condition.label[group.mfi.pca.data$Group]
+
+group.mfi.summary <- group.mfi.pca.data %>% 
+  dplyr::group_by(Group) %>%
+  dplyr::summarise_all( median )
+
+group.mfi.distance <- dist(group.mfi.summary[,-1])
+group.mfi.distance <- as.matrix(group.mfi.distance, labels=TRUE)
+group.mfi.distance <- as.data.frame(group.mfi.distance)
+colnames(group.mfi.distance) <- rownames(group.mfi.distance) <- group.mfi.summary[['Group']]
+
+write.csv(group.mfi.distance, file = file.path(fcs.pca.figure.dir, "intergroup_mfi_distance.csv"))
+
+jpeg( filename = file.path( fcs.pca.figure.dir, 
+                           "pca_marker_distance_dendrogram.jpg" ), 
+     width = fcs.heatmap.width/2, height = fcs.heatmap.height/2 )
+heatmap(as.matrix(group.mfi.distance),
+        col = fcs.heatmap.palette,
+        margins = c( margin.col/2, margin.row ) )
+legend(x = "topright", legend = c("close", "far"),
+       fill = fcs.heatmap.palette[c(1,100)], cex = 2 )
+dev.off()
+
+# run pca on cluster frequencies------------
+cat("Running PCA on cluster distributions\n")
+
+pca.cluster.result <- prcomp(flow.cluster.percent)
+
+# add labels and extract coordinates
+
+flow.cluster.frame <- data.frame(flow.cluster.percent)
+
+flow.cluster.frame$Sample <- names(flow.sample.color)
+
+flow.cluster.frame$sample.color <- flow.sample.color[flow.cluster.frame$Sample]
+
+flow.cluster.frame$Group <- flow.data.group.median$Group
+
+flow.cluster.frame[ , c("PC1", "PC2")] <- pca.cluster.result$x[, 1:2]
+pca.cluster.loadings <- data.frame(pca.cluster.result$rotation)
+pca.cluster.loadings$var <- rownames(pca.cluster.result$rotation)
+cluster.scaling.loadings <- max(abs( flow.cluster.frame[,c("PC1", "PC2")] )) / max( abs(pca.cluster.loadings[, 1:2])) / 2
+pca.cluster.loadings[, 1:2] <- pca.cluster.loadings[, 1:2] * cluster.scaling.loadings
+pc.cluster.variance <- summary(pca.cluster.result)
+pc.cluster.variance <- data.frame(pc.cluster.variance$importance)
+pc1.cluster.proportion <- pc.cluster.variance[2,1]*100
+pc2.cluster.proportion <- pc.cluster.variance[2,2]*100
+
+# plot pca on clusters with loadings
+pca.cluster.var.plot <- ggplot(data = flow.cluster.frame, 
+                              aes(PC1, PC2, col = Group )) +
+  geom_point( size = pca.point.size ) +
+  scale_color_manual( values = fcs.condition.color,
+                      breaks = fcs.condition,
+                      labels = fcs.condition.label)+
+  geom_segment( inherit.aes = FALSE, data = pca.cluster.loadings, 
+                aes(x = 0, y = 0, xend = PC1, yend = PC2 ),
+                color = "black", linewidth = pca.loading.arrow.size, 
+                arrow = arrow(length = unit(0.03, "npc")) ) +
+  geom_label( inherit.aes = FALSE, data = pca.cluster.loadings, 
+              aes(PC1 * 1.2, PC2 * 1.2, label = var ), 
+              size = pca.loading.text.size,
+              label.size = pca.loading.label.size ) +
+  xlab(paste( "PC1 (", pc1.cluster.proportion, "%)", sep = "" )) +
+  ylab(paste( "PC2 (", pc2.cluster.proportion, "%)", sep = "" )) +
+  theme_bw() +
+  theme( panel.grid = element_blank(), legend.title = element_blank() )
+
+ggsave(filename = file.path( fcs.pca.figure.dir, 
+                             paste0( pca.figure.cluster, "_loadings.jpg" )),
+       pca.cluster.var.plot, width = fcs.pca.figure.width, height = fcs.pca.figure.height )
+
+
+# plot pca on clusters without loadings
+pca.cluster.sample.plot <- ggplot(data = flow.cluster.frame, 
+                                  aes(PC1, PC2, col = Group )) +
+  geom_point(size = pca.point.size ) +
+  scale_color_manual( values = fcs.condition.color,
+                      breaks = fcs.condition,
+                      labels = fcs.condition.label)+
+  xlab(paste( "PC1 (", pc1.cluster.proportion, "%)", sep = "" )) +
+  ylab(paste( "PC2 (", pc2.cluster.proportion, "%)", sep = "" ))+
+  theme_bw() +
+  theme(panel.grid = element_blank(), legend.title = element_blank())
+
+ggsave(filename = file.path( fcs.pca.figure.dir, 
+                             paste( pca.figure.cluster, "_samples.jpg" )),
+       pca.cluster.sample.plot, width = fcs.pca.figure.width, height = fcs.pca.figure.height )
+
+# calculate inter-group distances for cluster PCA-------
+group.cluster.pca.data <- data.frame(pca.cluster.result$x)
+group.cluster.pca.data$Group <- flow.sample.condition[flow.data.group.median$Sample]
+group.cluster.pca.data$Group <- fcs.condition.label[group.cluster.pca.data$Group]
+
+group.cluster.summary <- group.cluster.pca.data %>% 
+  dplyr::group_by(Group) %>%
+  dplyr::summarise_all( median )
+
+group.cluster.distance <- dist(group.cluster.summary[,-1])
+group.cluster.distance <- as.matrix(group.cluster.distance, labels=TRUE)
+group.cluster.distance <- as.data.frame(group.cluster.distance)
+colnames(group.cluster.distance) <- rownames(group.cluster.distance) <- group.cluster.summary[['Group']]
+
+write.csv(group.cluster.distance, file = file.path(fcs.pca.figure.dir, "intergroup_cluster_distance.csv"))
+
+jpeg( filename = file.path( fcs.pca.figure.dir, 
+                           "pca_cluster_distance_dendrogram.jpg" ), 
+     width = fcs.heatmap.width/2, height = fcs.heatmap.height/2 )
+heatmap(as.matrix(group.cluster.distance),
+        col = fcs.heatmap.palette,
+        margins = c( margin.col/2, margin.row ) )
+legend(x = "topright", legend = c("close", "far"),
+       fill = fcs.heatmap.palette[c(1,100)], cex = 2 )
+dev.off()
+
+# run ANOVA with Tukey's post-test on marker MFIs and cluster frequencies-------
+
+source( file.path( fcs.src.dir, "flowcytoscript_anova.r") )
+
+
+# calculate tsne representation---------------
+
+cat("\n")
+
+{
+  if ( fcs.use.cached.results && file.exists( fcs.tsne.cache.file.path ) )
+  {
+    cat( "Using cached results for tsne\n" )
+    
+    load( fcs.tsne.cache.file.path )
+    
+    # check for mismatch in number of cells
+    if ( ! nrow( tsne.result$Y ) == dmrd.data.n ) {
+      fcs.tsne.learning.rate <- ifelse( nrow(dmrd.data)/fcs.tsne.exaggeration.factor > 2000, 
+                                        nrow(dmrd.data)/fcs.tsne.exaggeration.factor, 2000 )
+      
+      if ( is.null(dmrd.knn) ){
+        set.seed.here( fcs.seed.base, "calculate tsne representation" )
+        
+        cat( "Recalculating tSNE due to mismatch in cell numbers\n" )
+        
+        tsne.result <- Rtsne( dmrd.data, perplexity = fcs.tsne.perplexity, 
+                              exaggeration_factor = fcs.tsne.exaggeration.factor,
+                              eta = fcs.tsne.learning.rate,
+                              max_iter = fcs.tsne.iter.n, stop_lying_iter = fcs.tsne.early.iter.n,
+                              check_duplicates = FALSE, pca = FALSE, 
+                              num_threads = fcs.tsne.threads.n )
+        
+      } else {
+        set.seed.here( fcs.seed.base, "calculate tsne representation" )
+        
+        cat( "Recalculating tSNE due to mismatch in cell numbers\n" )
+        
+        tsne.result <- Rtsne_neighbors( dmrd.knn$idx, dmrd.knn$dist, 
+                                        perplexity = fcs.tsne.perplexity, 
+                                        exaggeration_factor = fcs.tsne.exaggeration.factor,
+                                        eta = fcs.tsne.learning.rate,
+                                        max_iter = fcs.tsne.iter.n, stop_lying_iter = fcs.tsne.early.iter.n,
+                                        check_duplicates = FALSE, pca = FALSE, 
+                                        num_threads = fcs.tsne.threads.n )
+      }
+    }
+  }
+  else
+  {
+    fcs.tsne.learning.rate <- ifelse( nrow(dmrd.data)/fcs.tsne.exaggeration.factor > 2000, 
+                                      nrow(dmrd.data)/fcs.tsne.exaggeration.factor, 2000 )
+    
+    if ( is.null(dmrd.knn) ){
+      set.seed.here( fcs.seed.base, "calculate tsne representation" )
+      
+      cat( "Calculating tSNE\n" )
+      
+      tsne.result <- Rtsne( dmrd.data, perplexity = fcs.tsne.perplexity, 
+                            exaggeration_factor = fcs.tsne.exaggeration.factor,
+                            eta = fcs.tsne.learning.rate,
+                            max_iter = fcs.tsne.iter.n, stop_lying_iter = fcs.tsne.early.iter.n,
+                            check_duplicates = FALSE, pca = FALSE, 
+                            num_threads = fcs.tsne.threads.n )
+      
+    } else {
+      set.seed.here( fcs.seed.base, "calculate tsne representation" )
+      
+      cat( "Calculating tSNE\n" )
+      
+      tsne.result <- Rtsne_neighbors( dmrd.knn$idx, dmrd.knn$dist, 
+                                      perplexity = fcs.tsne.perplexity, 
+                                      exaggeration_factor = fcs.tsne.exaggeration.factor,
+                                      eta = fcs.tsne.learning.rate,
+                                      max_iter = fcs.tsne.iter.n, stop_lying_iter = fcs.tsne.early.iter.n,
+                                      check_duplicates = FALSE, pca = FALSE, 
+                                      num_threads = fcs.tsne.threads.n )
+    }
+    
+    
+    save( tsne.result, file = fcs.tsne.cache.file.path )
+  }
+}
+
+tsne.data <- tsne.result$Y
+
+
+# plot tsne convergence---------------
+cat( "Plotting tSNE convergence\n" )
+
+tsne.iter <- 1 + 50 * ( 1 : length( tsne.result$itercosts ) - 1 )
+tsne.cost <- tsne.result$itercosts
+
+jpeg( filename = file.path( fcs.tsne.figure.dir, 
+                           sprintf( "%s.jpg", fcs.tsne.figure.convergence ) ), 
+     width = fcs.tsne.figure.convergence.width, 
+     height = fcs.tsne.figure.convergence.height )
+par( mar = c( 5, 5.8, 2, 1.4 ) )
+plot( tsne.iter, tsne.cost, log = "y", xlab = "Iteration", 
+      ylab = "Total cost", xlim = c( 0, fcs.tsne.iter.n ), 
+      ylim = c( 1, max( tsne.cost ) ), col = "blue3", 
+      pch = 20, cex = 1, cex.lab = 2.5, cex.axis = 2 )
+abline( h = tsne.cost[ length( tsne.cost ) ], lty = 2, lwd = 1.5, 
+        col = "blue3" )
+dev.off()
+
+
+# plot tsne representations---------------
+cat( "Plotting tSNE representations\n" )
+
+tsne.data.max <- max( abs( tsne.data ) )
+
+# plot tSNE with clusters colored
+dmrd.data.labeled <- dmrd.data
+colnames(dmrd.data.labeled) <- fcs.channel.label
+
+plot.cluster.drmd.figures(
+  tsne.data, tsne.data.max, 
+  fcs.tsne.figure.lims.factor, fcs.tsne.figure.point.size, 
+  fcs.tsne.cluster.figure.dir, fcs.tsne.figure.plot, 
+  dmrd.data, dmrd.event.cluster, dmrd.event.condition
+)
+
+# plot tSNE with everything
+
+plot.all.dmrd.figures( 
+  tsne.data, tsne.data.max, 
+  fcs.tsne.figure.lims.factor, fcs.tsne.figure.point.size, 
+  fcs.tsne.figure.dir, fcs.tsne.figure.plot, 
+  dmrd.data, dmrd.event.cluster, dmrd.event.condition
+)
+
+
+# plot umap representations---------------
+cat( "Plotting UMAP representations\n" )
+
+umap.data.max <- max( abs(umap.data) )
+
+# plot umap with clusters colored
+
+plot.cluster.drmd.figures(
+  umap.data, umap.data.max, 
+  fcs.umap.figure.lims.factor, fcs.umap.figure.point.size, 
+  fcs.umap.cluster.figure.dir, fcs.umap.figure.plot, 
+  dmrd.data, dmrd.event.cluster, dmrd.event.condition 
+)
+
+# plot umap with everything
+
+plot.all.dmrd.figures( 
+  umap.data, umap.data.max, 
+  fcs.umap.figure.lims.factor, fcs.umap.figure.point.size, 
+  fcs.umap.figure.dir, fcs.umap.figure.plot, 
+  dmrd.data.labeled, dmrd.event.cluster, dmrd.event.condition 
+)
+
+
+# trex: highlight changed regions---------------
+cat( "Finding regions of over or under-representation (T-REX)\n" )
+
+# subset data based on trex groups
+trex.dmrd.data <- subset(dmrd.data, dmrd.event.condition %in% trex.condition)
+trex.umap.data <- umap.data
+rownames(trex.umap.data) <- rownames(dmrd.data)
+trex.umap.data <- subset(trex.umap.data, dmrd.event.condition %in% trex.condition)
+trex.tsne.data <- tsne.data
+rownames(trex.tsne.data) <- rownames(dmrd.data)
+trex.tsne.data <- subset(trex.tsne.data, dmrd.event.condition %in% trex.condition)
+
+# calculate knn for the trex groups
+
+
+if ( length(fcs.condition) != length(trex.condition) ) {
+  set.seed.here( fcs.seed.base, "get knn with Rcpp" )
+  trex.knn <- RcppHNSW::hnsw_knn( trex.dmrd.data, k= fcs.tsne.perplexity,
+                                    distance= 'l2', n_threads= fcs.tsne.threads.n )
+} else if ( !is.null(dmrd.knn) ) {
+  trex.knn <- dmrd.knn
+} else {
+  set.seed.here( fcs.seed.base, "get knn with Rcpp" )
+  trex.knn <- RcppHNSW::hnsw_knn( trex.dmrd.data, k= fcs.tsne.perplexity,
+                                  distance= 'l2', n_threads= fcs.tsne.threads.n )
+}
+
+trex.knn.index <- trex.knn$idx
+first.condition.length <- nrow(subset(dmrd.data, dmrd.event.condition == trex.condition[1]))
+trex.knn.index[trex.knn.index <= first.condition.length] <- 0
+trex.knn.index[trex.knn.index > first.condition.length] <- 1
+
+# calculate percent change in each KNN region
+percent.change.knn <- (rowSums(trex.knn.index) / fcs.tsne.perplexity * 100)
+
+# create trex plots
+cat("Plotting changed regions on tSNE and UMAP\n")
+
+plot.changed.regions(
+  trex.tsne.data, percent.change.knn,
+  trex.figure.point.size, trex.condition, 
+  trex.figure.dir, fcs.tsne.figure.plot
+)
+
+plot.changed.regions(
+  trex.umap.data, percent.change.knn,
+  trex.figure.point.size, trex.condition,
+  trex.figure.dir, fcs.umap.figure.plot
+)
+
+
+# run crossentropy if desired-----------
+
+if(run.crossentropy == 1){
+  gc()
+  # calculate cross-entropy test for tsne by condition---------------
+  
+  set.seed.here( fcs.seed.base, "calculate cross-entropy test for tsne" )
+  
+  ce.diff.test.tsne.res <- ce.diff.test.tsne( 
+    dmrd.data, tsne.data, 
+    dmrd.event.condition, 
+    partition.label = fcs.condition.label, 
+    partition.color = fcs.condition.color, 
+    partition.line.type = fcs.condition.line.type, 
+    base.test = fcs.ce.diff.base.test, 
+    base.dist = fcs.ce.diff.base.dist, 
+    prob.sample.n = fcs.ce.diff.prob.sample.n, 
+    dendrogram.order.weight = fcs.ce.diff.figure.dendrogram.weight.condition, 
+    result = file.path( fcs.ce.diff.tsne.figure.dir, 
+                        sprintf( "%s_condition.txt", fcs.ce.diff.tsne.result ) ), 
+    cdf.figure = file.path( fcs.ce.diff.tsne.figure.dir, 
+                            sprintf( "%s_condition.jpg", fcs.ce.diff.tsne.figure.cdf ) ), 
+    dendrogram.figure = file.path( fcs.ce.diff.tsne.figure.dir, 
+                                   sprintf( "%s_condition.jpg", fcs.ce.diff.tsne.figure.dendrogram ) ) )
+  
+  
+  # calculate cross-entropy test for tsne by sample---------------
+  
+  set.seed.here( fcs.seed.base, "calculate cross-entropy test for tsne" )
+  
+  ce.diff.test.tsne.res <- ce.diff.test.tsne( 
+    dmrd.data, tsne.data, 
+    dmrd.event.sample, 
+    partition.label = flow.sample.label, 
+    partition.color = flow.sample.color, 
+    partition.line.type = flow.sample.line.type.single, 
+    base.test = fcs.ce.diff.base.test, 
+    base.dist = fcs.ce.diff.base.dist, 
+    prob.sample.n = fcs.ce.diff.prob.sample.n, 
+    dendrogram.order.weight = flow.ce.diff.figure.dendrogram.weight.sample, 
+    result = file.path( fcs.ce.diff.tsne.figure.dir, 
+                        sprintf( "%s_sample.txt", fcs.ce.diff.tsne.result ) ), 
+    cdf.figure = file.path( fcs.ce.diff.tsne.figure.dir, 
+                            sprintf( "%s_sample.jpg", fcs.ce.diff.tsne.figure.cdf ) ), 
+    dendrogram.figure = file.path( fcs.ce.diff.tsne.figure.dir, 
+                                   sprintf( "%s_sample.jpg", fcs.ce.diff.tsne.figure.dendrogram ) ) )
+  
+  
+  # calculate cross-entropy test for tsne by cluster---------------
+  
+  fcs.ce.diff.figure.dendrogram.weight.cluster <- 1 : fcs.cluster.n
+  names( fcs.ce.diff.figure.dendrogram.weight.cluster ) <- fcs.cluster
+  
+  set.seed.here( fcs.seed.base, "calculate cross-entropy test for tsne" )
+  
+  ce.diff.test.tsne.res <- ce.diff.test.tsne( 
+    dmrd.data, tsne.data, 
+    dmrd.event.cluster, 
+    partition.label = fcs.cluster.label, 
+    partition.color = fcs.cluster.color, 
+    partition.line.type = fcs.cluster.line.type, 
+    base.test = fcs.ce.diff.base.test, 
+    base.dist = fcs.ce.diff.base.dist, 
+    prob.sample.n = fcs.ce.diff.prob.sample.n, 
+    dendrogram.order.weight = fcs.ce.diff.figure.dendrogram.weight.cluster, 
+    result = file.path( fcs.ce.diff.tsne.figure.dir, 
+                        sprintf( "%s_cluster.txt", fcs.ce.diff.tsne.result ) ), 
+    cdf.figure = file.path( fcs.ce.diff.tsne.figure.dir, 
+                            sprintf( "%s_cluster.jpg", fcs.ce.diff.tsne.figure.cdf ) ), 
+    dendrogram.figure = file.path( fcs.ce.diff.tsne.figure.dir, 
+                                   sprintf( "%s_cluster.jpg", fcs.ce.diff.tsne.figure.dendrogram ) ) )
+  
+  # calculate cross-entropy test for umap by condition---------------
+  
+  set.seed.here( fcs.seed.base, "calculate cross-entropy test for umap" )
+  
+  ce.diff.test.umap.res <- ce.diff.test.umap( 
+    dmrd.knn$dist, dmrd.knn$idx, 
+    umap.data, umap.result, 
+    dmrd.event.condition, 
+    partition.label = fcs.condition.label, 
+    partition.color = fcs.condition.color, 
+    partition.line.type = fcs.condition.line.type, 
+    base.test = fcs.ce.diff.base.test, 
+    base.dist = fcs.ce.diff.base.dist, 
+    prob.sample.n = fcs.ce.diff.prob.sample.n, 
+    dendrogram.order.weight = fcs.ce.diff.figure.dendrogram.weight.condition, 
+    result = file.path( fcs.ce.diff.umap.figure.dir, 
+                        sprintf( "%s_condition.txt", fcs.ce.diff.umap.result ) ), 
+    cdf.figure = file.path( fcs.ce.diff.umap.figure.dir, 
+                            sprintf( "%s_condition.jpg", fcs.ce.diff.umap.figure.cdf ) ), 
+    dendrogram.figure = file.path( fcs.ce.diff.umap.figure.dir, 
+                                   sprintf( "%s_condition.jpg", fcs.ce.diff.umap.figure.dendrogram ) ) )
+  
+  
+  # calculate cross-entropy test for umap by sample---------------
+  
+  set.seed.here( fcs.seed.base, "calculate cross-entropy test for umap" )
+  
+  ce.diff.test.umap.res <- ce.diff.test.umap( 
+    dmrd.knn$dist, dmrd.knn$idx, 
+    umap.data, umap.result, 
+    dmrd.event.sample, 
+    partition.label = flow.sample.label, 
+    partition.color = flow.sample.color, 
+    partition.line.type = flow.sample.line.type.single, 
+    base.test = fcs.ce.diff.base.test, 
+    base.dist = fcs.ce.diff.base.dist, 
+    prob.sample.n = fcs.ce.diff.prob.sample.n, 
+    dendrogram.order.weight = flow.ce.diff.figure.dendrogram.weight.sample, 
+    result = file.path( fcs.ce.diff.umap.figure.dir, 
+                        sprintf( "%s_sample.txt", fcs.ce.diff.umap.result ) ), 
+    cdf.figure = file.path( fcs.ce.diff.umap.figure.dir, 
+                            sprintf( "%s_sample.jpg", fcs.ce.diff.umap.figure.cdf ) ), 
+    dendrogram.figure = file.path( fcs.ce.diff.umap.figure.dir, 
+                                   sprintf( "%s_sample.jpg", fcs.ce.diff.umap.figure.dendrogram ) ) )
+  
+  
+  # calculate cross-entropy test for umap by cluster---------------
+  
+  set.seed.here( fcs.seed.base, "calculate cross-entropy test for umap" )
+  
+  ce.diff.test.umap.res <- ce.diff.test.umap( 
+    dmrd.knn$dist, dmrd.knn$idx, 
+    umap.data, umap.result, 
+    dmrd.event.cluster, 
+    partition.label = fcs.cluster.label, 
+    partition.color = fcs.cluster.color, 
+    partition.line.type = fcs.cluster.line.type, 
+    base.test = fcs.ce.diff.base.test, 
+    base.dist = fcs.ce.diff.base.dist, 
+    prob.sample.n = fcs.ce.diff.prob.sample.n, 
+    dendrogram.order.weight = fcs.ce.diff.figure.dendrogram.weight.cluster, 
+    result = file.path( fcs.ce.diff.umap.figure.dir, 
+                        sprintf( "%s_cluster.txt", fcs.ce.diff.umap.result ) ), 
+    cdf.figure = file.path( fcs.ce.diff.umap.figure.dir, 
+                            sprintf( "%s_cluster.jpg", fcs.ce.diff.umap.figure.cdf ) ), 
+    dendrogram.figure = file.path( fcs.ce.diff.umap.figure.dir, 
+                                   sprintf( "%s_cluster.jpg", fcs.ce.diff.umap.figure.dendrogram ) ) )
+}
+
+# calculate stats for T-REX groups-------------
+
+trex.group.cluster.long <- flow.cluster.frame.long %>%
+  dplyr::filter( Group %in% trex.condition)
+
+p.values.all <- NULL
+p.values.all <- list()
+
+for (cluster in unique(trex.group.cluster.long$Cluster)) {
+  temp <- trex.group.cluster.long %>% 
+    dplyr::filter(Cluster == cluster) %>%
+    group_by(Group) %>%
+    suppressMessages(summarise(Percent = Percent))
+  
+  res_aov <- aov( Percent ~ Group, data = temp )
+  
+  fitted.em <- emmeans(res_aov, "Group", data = temp )
+  
+  p.values <- data.frame( pairs(fitted.em, adjust = "tukey" ) )
+  p.values <- p.values[,c(1,6)]
+  p.values$significant <- ifelse( p.values$p.value < 0.05, "Yes", "No" )
+  p.values.all[cluster] <- p.values$p.value
+  
+  write.csv(p.values, file.path( trex.figure.dir, paste0( cluster, "_frequencies_anova.csv")))
+  
+}
+
+#names(p.values.all) <- fcs.cluster.label
+p.values.all.available <- p.values.all[!is.na(p.values.all)]
+p.values.all.significant <- p.values.all.available[p.values.all.available < 0.05]
+
+# format for report
+if( length(tissue.type) >1 ){
+  tissue.type <- tissue.type
+} else if ( tissue.type == "Immune"){
+  tissue.type <- "Immune system"
+}
+
+if( length(p.values.all.significant) !=0 ){
+  p.value.message <- length( p.values.all.significant )
+} else {
+  p.value.message <- "none"
+}
+
+analysis.end.time <- Sys.time()
+analysis.calc.time <- round(difftime(analysis.end.time, analysis.start.time, units='mins'), 2)
+analysis.calc.time <- as.numeric(analysis.calc.time)
+
+
+## inform user analysis is finished---------
+cat(
+  "\n
+ Analysis complete!\n
+  \n"
+)
+
+
