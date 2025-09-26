@@ -1,0 +1,274 @@
+"0","```r
+source( file.path( fcs.src.dir, \"flowcytoscript_define_experiment.r\") )
+```"
+"1","This part of the workflow requires your input.
+
+Let's start by defining the groups in your experiment.
+For this to work, the data files need to be named with the identifying
+label for the group, and those tags need to be unique to each group.
+Please type the tags (names) exactly as they appear in the files.
+In the following step, you'll get the opportunity to assign new names
+for each group, which will appear on the plots in the end.
+"
+"0","```r
+2
+WT
+KO
+```"
+"1","Do you need to correct any of the group names?  
+
+1 WT
+2 KO
+
+Enter relevant number(s), separated by commas
+Ranges such as 3:7 may be specified)
+(Enter 0 for none)
+"
+"0","```r
+0
+```"
+"1","Do you want to enter different names for the groups? These labels will appear on the plots.  
+
+1: Yes
+2: No
+"
+"0","```r
+2
+```"
+"1","
+
+Your groups will be labeled as follows: 
+  WT   KO 
+\"WT\" \"KO\" 
+
+
+
+
+Flowcytoscript will accept either FCS or CSV files as input.
+
+If you use FCS files from a flow cytometer, a biexponential transformation will 
+be applied automatically so that the data should be correctly scaled. For mass
+cytometry, ArcSinh will be used. This transformation will be adapted
+to the type of cytometer you have used for acquiring the data.
+
+To have more control over the transformation (scaling) of the data, you can export
+data as CSV files with the transformation already embedded in the data. To 
+create these CSV-channel-value files, see the instructions.
+
+Please select whether you are using CSV or FCS files. 
+
+1: CSV
+2: FCS
+"
+"0","```r
+2
+```"
+"1","
+
+Now you'll need to select the markers (channels) you want to use for your analysis.
+Enter the numbers of the channels you want. You may need to expand the console window
+in order to see everything.
+
+
+Please select channels for analysis: 
+
+Channel Marker       
+1       Foxp3        
+2       T-bet        
+3       IRF4         
+4       Ki67         
+5       CCR9         
+6       CD95         
+7       Ly-6C        
+8       CD103        
+9       CD4          
+10      NK1.1        
+11      CTLA-4       
+12      CD19         
+13      CD62L        
+14      CD8          
+15      CD45.1       
+16      CCR2         
+17      CD44         
+18      ICOS         
+19      RORgT        
+20      PD-1         
+21      CXCR3        
+22      viability    
+23      TNFRII       
+24      CD69         
+25      CD25         
+26      ST2          
+27      GATA-3       
+28      Neuropilin   
+29      injected CD45
+30      CD3          
+31      KLRG1        
+32      Helios       
+
+Enter relevant number(s), separated by commas
+Ranges such as 3:7 may be specified)
+(Enter 0 for none)
+"
+"0","```r
+2:8,10:11,13,16:21,23:28,31:32
+```"
+"1","
+These are the channels you've selected:
+T-bet
+IRF4
+Ki67
+CCR9
+CD95
+Ly-6C
+CD103
+NK1.1
+CTLA-4
+CD62L
+CCR2
+CD44
+ICOS
+RORgT
+PD-1
+CXCR3
+TNFRII
+CD69
+CD25
+ST2
+GATA-3
+Neuropilin
+KLRG1
+Helios
+
+      Do you need to change your channel selection?  
+
+1: Yes
+2: No
+"
+"0","```r
+2
+```"
+"1","
+Next you'll have the option to rename the marker labels.
+
+To rename any channels, select them now 
+
+1  T-bet     
+2  IRF4      
+3  Ki67      
+4  CCR9      
+5  CD95      
+6  Ly-6C     
+7  CD103     
+8  NK1.1     
+9  CTLA-4    
+10 CD62L     
+11 CCR2      
+12 CD44      
+13 ICOS      
+14 RORgT     
+15 PD-1      
+16 CXCR3     
+17 TNFRII    
+18 CD69      
+19 CD25      
+20 ST2       
+21 GATA-3    
+22 Neuropilin
+23 KLRG1     
+24 Helios    
+
+Enter relevant number(s), separated by commas
+Ranges such as 3:7 may be specified)
+(Enter 0 for none)
+"
+"0","```r
+0
+```"
+"1","
+This is how your channels will be labeled: 
+       T-bet         IRF4         Ki67         CCR9         CD95        Ly-6C 
+     \"T-bet\"       \"IRF4\"       \"Ki67\"       \"CCR9\"       \"CD95\"      \"Ly-6C\" 
+       CD103        NK1.1       CTLA-4        CD62L         CCR2         CD44 
+     \"CD103\"      \"NK1.1\"     \"CTLA-4\"      \"CD62L\"       \"CCR2\"       \"CD44\" 
+        ICOS        RORgT         PD-1        CXCR3       TNFRII         CD69 
+      \"ICOS\"      \"RORgT\"       \"PD-1\"      \"CXCR3\"     \"TNFRII\"       \"CD69\" 
+        CD25          ST2       GATA-3   Neuropilin        KLRG1       Helios 
+      \"CD25\"        \"ST2\"     \"GATA-3\" \"Neuropilin\"      \"KLRG1\"     \"Helios\" 
+
+
+
+Now we'll match the data files to the group names you entered earlier.
+
+
+
+
+Files per group:
+
+flow.sample.condition
+WT KO 
+ 3  5 
+
+
+Events per group:
+
+  WT   KO 
+2685 2813 
+
+
+Events per sample:
+
+WT.01 WT.02 WT.03 KO.01 KO.02 KO.03 KO.04 KO.05 
+  454   385  1846  1829   600   173    67   144 
+
+
+We found these data files matching your groups.
+If this doesn't meet your expectations, you should start over
+and double-check your file names vis-a-vis your group names.
+
+
+Please set the number of cells (events) you'd like to use for the analysis.
+This will be set as a maximum number per file, so if you set it at 2000
+but you only have 500 in some samples, all 500 will be used.
+The more data you analyze, the longer it will take. If you aren't sure,
+maybe try for a total of no more than 100,000 (for example, 2 groups
+with 5 samples per group and 10000 cells/sample gives 100000 total.)
+Please enter the number without punctuation.
+
+For your analysis, please enter a maximum number of cells you'd like to 
+analyze per sample. For samples with fewer cells than this number, all 
+cells will be used.
+    
+"
+"0","```r
+0
+```"
+"1","
+Do you want to run the crossentropy statistical test on your tSNE and UMAP projections?
+It can be slow if you have lots of events, but it is a powerful tool.
+ 
+
+1: Yes
+2: No
+"
+"0","```r
+2
+Example
+```"
+"1","
+
+  Setting color palette...
+
+  
+
+
+    Creating output folders...
+
+
+    Selecting data for analysis...
+
+
+  Move to the next section.
+
+  
+"

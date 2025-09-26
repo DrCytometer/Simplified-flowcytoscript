@@ -1,0 +1,20 @@
+"0","```r
+source( file.path( fcs.src.dir, \"flowcytoscript_run_analysis.r\") )
+```"
+"1","Plotting heatmaps
+Plotting histograms of cluster frequency
+Running PCA on MFIs
+Running PCA on cluster distributions
+Performing statistical analysis on cluster and marker distributions
+Calculating tSNE
+Plotting tSNE convergence
+Plotting tSNE representations
+Plotting UMAP representations
+Finding regions of over or under-representation (T-REX)
+Plotting changed regions on tSNE and UMAP
+
+
+ Analysis complete!
+
+  
+"

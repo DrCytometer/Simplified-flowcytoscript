@@ -1,0 +1,71 @@
+# R package creation workflow
+
+# open script
+
+library( devtools )
+library( roxygen2 )
+library( usethis )
+
+# Create a New Project:
+
+#  Open RStudio and go to File > New Project.
+# Select New Directory > R Package.
+# Fill in the package name and directory, then click Create Project.
+
+create_package( "AutoSpectral" )
+
+# move scripts to R folder
+
+# in new R session:
+devtools::load_all()
+
+devtools::check()
+
+usethis::use_gpl3_license()
+
+# check NAMESPACE and DESCRIPTION files
+# delete NAMESPACE and let Roxygen generate it
+
+# add roxygen2 tags
+# add examples if you want examples in the help file
+# then
+#file.remove("NAMESPACE")
+roxygen2::roxygenise()
+
+devtools::document()
+
+devtools::check()
+
+# possibly for CRAN:
+# devtools::build()
+
+usethis::use_git()
+
+usethis::use_github()
+# this creates a repository on GitHub
+
+# Tools/Version Control/Commit
+# select items to push
+
+
+# 1) make changes
+# 2) git add .
+# 3) commit changes. git commit -m "Commit message"
+# 4) push changes. git push origin master
+
+# or use GUI:
+# make changes
+# select items to stage/commit
+# commit message
+# commit
+# Push
+
+usethis::use_readme_rmd()
+
+devtools::build_readme()
+
+devtools::build()
+
+# check function globals
+library(codetools)
+findGlobals(my_function)

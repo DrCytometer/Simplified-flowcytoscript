@@ -1,0 +1,93 @@
+"0","```r
+source( file.path( fcs.src.dir, \"flowcytoscript_load_runchecks.r\") )
+```"
+"1","
+
+  Loading packages...
+
+  
+"
+"1","Loading required package: digest
+Loading required package: dunn.test
+Loading required package: ggplot2
+Use suppressPackageStartupMessages() to eliminate package
+startup messages
+Loading required package: ggridges
+Loading required package: ggrepel
+Loading required package: ggtext
+Loading required package: RColorBrewer
+Loading required package: Rtsne
+Loading required package: uwot
+Loading required package: Matrix
+Loading required package: dplyr
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Loading required package: tidyr
+
+Attaching package: ‘tidyr’
+
+The following objects are masked from ‘package:Matrix’:
+
+    expand, pack, unpack
+
+Loading required package: RcppHNSW
+Loading required package: parallel
+Loading required package: data.table
+Registered S3 method overwritten by 'data.table':
+  method           from
+  print.data.table     
+data.table 1.15.4 using 4 threads (see ?getDTthreads).  Latest news: r-datatable.com
+
+Attaching package: ‘data.table’
+
+The following objects are masked from ‘package:dplyr’:
+
+    between, first, last
+
+Loading required package: remotes
+Loading required package: BiocManager
+Bioconductor version 3.19 (BiocManager 1.30.23), R 4.4.1
+  (2024-06-14 ucrt)
+Loading required package: coda
+Loading required package: emmeans
+Welcome to emmeans.
+Caution: You lose important information if you filter this package's results.
+See '? untidy'
+Loading required package: EmbedSOM
+Loading required package: ConsensusClusterPlus
+Loading required package: flowCore
+
+Attaching package: ‘flowCore’
+
+The following object is masked from ‘package:Matrix’:
+
+    %&%
+
+Loading required package: flowWorkspace
+As part of improvements to flowWorkspace, some behavior of
+GatingSet objects has changed. For details, please read the section
+titled \"The cytoframe and cytoset classes\" in the package vignette:
+
+  vignette(\"flowWorkspace-Introduction\", \"flowWorkspace\")
+Loading required package: readxl
+Loading required package: scattermore
+Loading required package: FastPG
+Loading required package: parallelly
+"
+"1","
+
+If there are no error messages, then the packages are loaded and source code has been located.
+
+Warnings about packages being built under a slight different R version are usually not a problem.
+
+Proceed to the next step.
+"

@@ -1,0 +1,203 @@
+"0","```r
+source( file.path( fcs.src.dir, \"flowcytoscript_clustering.r\") )
+```"
+"1","
+
+As the first part of the analysis, the script will cluster your cells into groups.
+
+For this, you can use either Phenograph or FlowSOM.
+
+Phenograph is fast, and will automatically determine how many clusters to generate.
+Sometimes it overclusters, particularly in cases with lots of homogeneous cells.
+
+If you prefer to use FlowSOM, you'll need to decide how many clusters you want to find.
+
+One strategy that may be helpful is first run Phenograph, assess approximately how
+many clusters appear to really be distinct, then repeat the analysis using FlowSOM
+with a defined number of clusters. Alternatively, examine the umap plot in figure_umap
+to see how many islands there are.
+
+Using cached results for umap
+Please choose your clustering approach. 
+
+1: Phenograph
+2: FlowSOM
+"
+"0","```r
+1
+```"
+"1","
+Clustering data with Phenograph
+
+
+Next, the script will try to identify and name the cell types present in every cluster.
+For this to work best, you'll need to enter three pieces of information:
+1) Whether you're using human or mouse cells
+2) Which tissues you're using
+3) If you've pre-selected only certain cell types, which cells those are.
+
+Please consider the automated naming as a guide, and review the names by checking the heatmaps
+and density plots for the clusters. If you don't see the correct cell types being identified,  
+check the instructions for cluster naming and add your cell type definitions to the database 
+spreadsheet.
+
+Please select the species your cells come from.  
+
+1: Mouse
+2: Human
+"
+"0","```r
+1
+```"
+"1","
+
+To identify tissue-specific cell types, tell the script which tissue sources
+you've used. Immune cells is the default, so include this in addition to any
+extra sources you've used.Select the tissue or tissues your cells come from.  
+
+1 Immune
+2 Lung  
+3 Liver 
+4 Skin  
+5 Brain 
+
+Enter relevant number(s), separated by commas
+Ranges such as 3:7 may be specified)
+(Enter 0 for none)
+"
+"0","```r
+1
+```"
+"1","If you have pre-gated on specific cell types, please them here.
+                       If you're using all viable cells, select 1. 
+
+1  All                
+2  T cell             
+3  ab T cell          
+4  gd T cell          
+5  CD4                
+6  CD8                
+7  CD4 Tconv          
+8  CD4 Treg           
+9  Act CD4 Tconv      
+10 Act CD4 Treg       
+11 CD8 Tconv          
+12 B cell             
+13 Transitional B cell
+14 ILC                
+15 DC                 
+16 Lineage-neg        
+
+Enter relevant number(s), separated by commas
+Ranges such as 3:7 may be specified)
+(Enter 0 for none)
+"
+"0","```r
+7
+```"
+"1","
+    Plotting histograms for each marker for samples...
+"
+"1","Picking joint bandwidth of 8.84
+Picking joint bandwidth of 13.9
+Picking joint bandwidth of 3.38
+Picking joint bandwidth of 17.6
+Picking joint bandwidth of 44.9
+Picking joint bandwidth of 14.2
+Picking joint bandwidth of 30.2
+Picking joint bandwidth of 8.96
+Picking joint bandwidth of 16.6
+Picking joint bandwidth of 9.84
+Picking joint bandwidth of 18.7
+Picking joint bandwidth of 7.48
+Picking joint bandwidth of 22.1
+Picking joint bandwidth of 9.38
+Picking joint bandwidth of 4.96
+Picking joint bandwidth of 7.32
+Picking joint bandwidth of 11.2
+Picking joint bandwidth of 5.3
+Picking joint bandwidth of 11.9
+Picking joint bandwidth of 18.2
+Picking joint bandwidth of 6.55
+Picking joint bandwidth of 3.28
+Picking joint bandwidth of 11.1
+Picking joint bandwidth of 35.2
+"
+"1","
+    Plotting histograms for each marker for clusters...
+"
+"1","Picking joint bandwidth of 11.1
+Picking joint bandwidth of 12
+Picking joint bandwidth of 5.94
+Picking joint bandwidth of 14.4
+Picking joint bandwidth of 27
+Picking joint bandwidth of 9.95
+Picking joint bandwidth of 15.1
+Picking joint bandwidth of 9.74
+Picking joint bandwidth of 13.6
+Picking joint bandwidth of 11
+Picking joint bandwidth of 17.5
+Picking joint bandwidth of 10.7
+Picking joint bandwidth of 17
+Picking joint bandwidth of 9.52
+Picking joint bandwidth of 9.66
+Picking joint bandwidth of 8.24
+Picking joint bandwidth of 9.44
+Picking joint bandwidth of 6.96
+Picking joint bandwidth of 11.8
+Picking joint bandwidth of 14
+Picking joint bandwidth of 8.59
+Picking joint bandwidth of 3.94
+Picking joint bandwidth of 10.2
+Picking joint bandwidth of 27.4
+"
+"1","
+Do you want to rename any clusters?  
+
+1  Naïve CD4 Tconv CD44          
+2  Act CD4 Tconv TNFRII          
+3  Act CD4 Tconv CD69 TNFRII     
+4  Act CD4 Tconv CD69            
+5  Act CD4 Tconv                 
+6  Act CD4 Tconv                 
+7  Naïve CD4 Tconv CD44 CD62L    
+8  Naïve CD4 Tconv CD44          
+9  Naïve CD4 Tconv CD44 CD62L    
+10 Memory CD4 Tconv              
+11 Act CD4 Tconv CD69 TNFRII Ki67
+12 Naïve CD4 Tconv CD44          
+13 Th2                           
+14 Act CD4 Tconv CD69 PD-1       
+15 Naïve CD4 Tconv CD69 CD103    
+16 iNKT                          
+
+Enter relevant number(s), separated by commas
+Ranges such as 3:7 may be specified)
+(Enter 0 for none)
+"
+"0","```r
+0
+```"
+"1","
+Your clusters will be named as follows: 
+      
+Naïve CD4 Tconv CD44
+Act CD4 Tconv TNFRII
+Act CD4 Tconv CD69 TNFRII
+Act CD4 Tconv CD69
+Act CD4 Tconv
+Act CD4 Tconv
+Naïve CD4 Tconv CD44 CD62L
+Naïve CD4 Tconv CD44
+Naïve CD4 Tconv CD44 CD62L
+Memory CD4 Tconv
+Act CD4 Tconv CD69 TNFRII Ki67
+Naïve CD4 Tconv CD44
+Th2
+Act CD4 Tconv CD69 PD-1
+Naïve CD4 Tconv CD69 CD103
+iNKT
+    Exporting cluster counts and percentages as spreadsheets...
+
+Proceed to the next section.
+"

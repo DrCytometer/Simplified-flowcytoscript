@@ -1,0 +1,42 @@
+"0","```r
+fcs.data.dir <- \"./Data\"
+fcs.src.dir <- \"./00_source_files\"
+message.delay.time <- 1
+Be.Chatty <- TRUE
+
+source( file.path( fcs.src.dir, \"flowcytoscript_startup.r\") )
+```"
+"1","Welcome to flowcytoscript!
+
+This simplified version of the Liston Lab flow cytometry analysis
+
+pipeline will try to take care of as much as possible.
+
+
+We're going to have you tell us what your groups are,
+
+which markers you want to analyze, and how many cells
+
+you want to work with.
+ 
+
+After that, we'll try to cluster
+
+your data, and provide you with visualizations in the forms
+
+of tSNE, UMAP, PCA, heatmaps and barcharts.
+
+
+For best results, make sure your R and RStudio are up-to-date.
+
+
+Now we're going to try to install any of the required packages
+
+that you don't already have installed.
+
+
+
+That's all done. Now, on to the analysis!
+
+      
+"
