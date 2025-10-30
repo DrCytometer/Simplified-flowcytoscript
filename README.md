@@ -11,8 +11,7 @@ You may wish to check out Peter Leary's MARMOT pipeline [https://github.com/pete
 Please note that the automated cluster annotations are not very good. This is a 
 first attempt at this. An improved version is in progress. 
 
-Code is available and free for academic users. Commercial users should contact 
-Adrian Liston to discuss licensing options.
+Code is available and free use under the GPL3 license.
 
 This simplified version of the flowcytoscript (Crossentropy test) is intended to 
 be usable by people with little to no experience in programming. All inputs are 
@@ -162,3 +161,4 @@ recording your entries and will facilitate troubleshooting. * If you've run the
 script and encountered errors, you will likely need to start the analysis over 
 in a new folder to avoid error propagation. Alternatively, delete the cache files 
 (tsne_cache, umap_cache).
+
