@@ -1,0 +1,45 @@
+# User data (never commit raw or exported flow cytometry data)
+Data/
+*.fcs
+*.csv
+!marker_database.csv
+
+# Analysis outputs (all regenerated each run)
+figure_tsne/
+figure_tsne_cluster/
+figure_umap/
+figure_umap_cluster/
+figure_pca/
+figure_heatmap/
+figure_histogram/
+figure_density/
+figure_changed_regions/
+
+# Statistics and table outputs
+*stats*/
+*table*/
+
+# Cache files
+tsne_cache.dat
+umap_cache.dat
+*.dat
+
+# Generated notebook report
+flowcytoscript.nb.html
+*.nb.html
+
+# R session and project files
+.Rhistory
+.Rapp.history
+.RData
+.Ruserdata
+.Rproj.user/
+*.Rproj
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor junk
+*.Rproj.user
+.vscode/

@@ -6,7 +6,9 @@ how to code. High dimensional flow cytometry analysis.
 A simplified complete workflow in R for analysis of high parameter flow cytometry 
 data including the Crossentropy method.
 
-You may wish to check out Peter Leary's MARMOT pipeline [https://github.com/peterleary/MARMOT].
+You may wish to check out the [MARMOT pipeline](https://github.com/peterleary/MARMOT)
+or the [CyCondor project](https://github.com/lorenzobonaguro/cyCONDOR), both of which are being actively maintained, are user-friendly
+and provide a greater range of functionality.
 
 Please note that the automated cluster annotations are not very good. This is a 
 first attempt at this. An improved version is in progress. 

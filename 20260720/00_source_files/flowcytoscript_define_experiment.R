@@ -565,8 +565,7 @@ figure.dir <- c(
   trex.figure.dir,
   fcs.pca.figure.dir,
   fcs.mfi.stats.dir,
-  fcs.cluster.stats.dir,
-  fcs.cluster.id.figure.dir
+  fcs.cluster.stats.dir
 )
 
 table.dir <- fcs.cluster.table.dir

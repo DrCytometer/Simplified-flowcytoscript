@@ -35,7 +35,7 @@ You'll get a warning if anything fails to install properly.
 
 ```{r Install any missing packages}
 fcs.data.dir <- "./Data"
-fcs.src.dir <- "./00_source_files"
+fcs.src.dir <- "/Users/oliverburton/Bioinformatics/FlowCytoScript/00_source_files"
 message.delay.time <- 1
 Be.Chatty <- TRUE
 
@@ -98,60 +98,42 @@ source( file.path( fcs.src.dir, "flowcytoscript_run_analysis.r") )
 
 # Results
 ## Summary
-FlowCytoScript analyzed your data on ```r experimental.system``` in the ```r tissue.type```.```r length(fcs.channel)``` channels were included and clustering was performed with ```r c("Phenograph", "FlowSOM")[clustering.method]``` on ```r dmrd.data.n```
-cells. ```r length(fcs.cluster.label)``` clusters were found, annotated and ```r p.value.message```
-of these were significantly different between ```r trex.condition[1]``` and ```r trex.condition[2]```. 
 
-tSNE, UMAP and PCA analyses were performed, and heatmaps, histograms and expression density plots were generated. 
-Statistical analysis on marker expression and cluster frequencies was performed, 
-and the results can be found in the ```r fcs.mfi.stats.dir``` folder.
-  
-These are the channels that were used in the analysis: `r fcs.channel.label`  
-  
-  
-The analysis completed in `r analysis.calc.time` minutes. Setting up the analysis and
-clustering took `r setup.time` minutes.
+Run this section once you've finished to get a summary of what was done and to generate the nicely formatted html document (open in web browser).
 
+```{r results summary, echo=FALSE, results='asis'}
+required.vars <- c(
+  "experimental.system", "tissue.type", "fcs.channel", "clustering.method",
+  "dmrd.data.n", "fcs.cluster.label", "p.value.message", "trex.condition",
+  "fcs.mfi.stats.dir", "fcs.channel.label", "analysis.calc.time", "setup.time"
+)
 
-  
-  
-## Graphs
+analysis.is.complete <- all( sapply( required.vars, exists ) )
 
-tSNE visualization of the data  
-![](./figure_tsne/tsne_plot_all_conditions_cluster.png)
-  
-  
-UMAP visualization of the data with clusters in colored overlay
-![](./figure_umap/umap_plot_all_conditions_cluster.png)
-  
-  
-Principal Components Analysis based on marker expression  
-![](./figure_pca/pca_sample_mfi_loadings.png)
-  
-  
-Principal Components Analysis by cluster distribution
-![](./figure_pca/pca_cluster_loadings.png)
-  
-  
-Heatmap of marker expression by sample
-![](./figure_heatmap/heatmap_by_sample.png)
-  
-  
-Marker expression by sample
-![](./figure_density/density_sample.jpeg)
-  
-  
-Heatmap of marker expression by cluster
-![](./figure_heatmap/heatmap_by_cluster.png)
-  
-  
-Marker expression by cluster
-![](./figure_density/density_cluster.jpeg)
-  
-  
-Sample histogram
-![](./figure_histogram/histogram_by_sample.png)
-  
-Changes in distribution: `r trex.condition[1]` versus `r trex.condition[2]`
-![](./figure_changed_regions/tsne_plot.png)
+if( analysis.is.complete ) {
+
+  summary.text <- paste0(
+    "FlowCytoScript analyzed your data on ", experimental.system,
+    " in the ", tissue.type, ". ",
+    length(fcs.channel), " channels were included and clustering was performed with ",
+    c("Phenograph", "FlowSOM")[clustering.method], " on ", dmrd.data.n, " cells. ",
+    length(fcs.cluster.label), " clusters were found, annotated and ", p.value.message,
+    " of these were significantly different between ", trex.condition[1],
+    " and ", trex.condition[2], ". \n\n",
+    "tSNE, UMAP and PCA analyses were performed, and heatmaps, histograms and expression density plots were generated. ",
+    "Statistical analysis on marker expression and cluster frequencies was performed, ",
+    "and the results can be found in the ", fcs.mfi.stats.dir, " folder.\n\n",
+    "These are the channels that were used in the analysis: ", fcs.channel.label, "\n\n",
+    "The analysis completed in ", analysis.calc.time, " minutes. Setting up the analysis and ",
+    "clustering took ", setup.time, " minutes.\n"
+  )
+
+  cat( summary.text )
+
+} else {
+
+  cat( "*This summary section will be filled in automatically once the analysis has finished running. If you are seeing this message in your final report, please re-knit the document after running all the chunks above.*\n" )
+
+}
+```
    

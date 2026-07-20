@@ -8,13 +8,6 @@
 # @params: path_to_db_file - DB file with cell types
 # @tissue - source of cells (e.g. Immune system, Liver, Pancreas, Kidney, Eye, Brain)
 #
-# In addition to markers_positive / markers_negative, this now also returns
-# markers_positive_weight / markers_negative_weight: a specificity weight per
-# marker, computed within the candidate set of cell types selected by
-# `tissue` and `parent.cell.type`. A marker used positively (or negatively)
-# by only one candidate cell type gets weight 1; a marker shared across
-# several candidate cell types (e.g. a broad lineage marker) is down-weighted
-# to 1/n, since it carries less power to distinguish between them.
 
 prepare_marker_lists <- function(path_to_db_file, tissue = "Immune", parent.cell.type = 0){
   
@@ -44,24 +37,5 @@ prepare_marker_lists <- function(path_to_db_file, tissue = "Immune", parent.cell
   Neg.Markers <- lapply(1:nrow(cell_markers), function(x) gsub(" ","",unlist(strsplit(toString(cell_markers$Negative.Markers[x]),","))))
   names(Neg.Markers) <- cell_markers$Cell.type
   
-  # specificity weight: 1 / (number of candidate cell types in this comparison
-  # set that also list the marker on the same side, positive or negative)
-  compute_specificity_weights <- function(marker_list){
-    all_mk <- unlist(marker_list, use.names = FALSE)
-    all_mk <- all_mk[!is.na(all_mk) & all_mk != "" & all_mk != "NA"]
-    mk_counts <- table(all_mk)
-    lapply(marker_list, function(mk){
-      mk <- mk[!is.na(mk) & mk != "" & mk != "NA"]
-      if (length(mk) == 0) return(numeric(0))
-      w <- 1 / as.numeric(mk_counts[mk])
-      names(w) <- mk
-      w
-    })
-  }
-  
-  Pos.Weights <- compute_specificity_weights(Pos.Markers)
-  Neg.Weights <- compute_specificity_weights(Neg.Markers)
-  
-  list(markers_positive = Pos.Markers, markers_negative = Neg.Markers,
-       markers_positive_weight = Pos.Weights, markers_negative_weight = Neg.Weights)
+  list(markers_positive = Pos.Markers, markers_negative = Neg.Markers)
 }

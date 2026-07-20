@@ -145,46 +145,14 @@ if (clustering.method == 2){
   
 } else {
   # get phenograph clusters---------------
+  cat("Clustering data with Phenograph\n")
+  
   set.seed.here( fcs.seed.base, "get clusters with Phenograph" )
+  links <- FastPG::rcpp_parallel_jce( dmrd.knn$idx )
+  links <- FastPG::dedup_links( links )
+  clusters <- FastPG::parallel_louvain( links )
   
-  # fcs.phenograph.engine is set during flowcytoscript_startup.r: "FastPG" if it
-  # installed successfully, "Rphenograph" if we fell back to that instead (e.g.
-  # because FastPG's compiler needs OpenMP support that isn't set up on this Mac),
-  # or NA if neither is available.
-  phenograph.engine <- if (exists("fcs.phenograph.engine")) fcs.phenograph.engine else NA_character_
-  if (is.na(phenograph.engine)) {
-    phenograph.engine <- if (requireNamespace("FastPG", quietly = TRUE)) "FastPG" 
-    else if (requireNamespace("Rphenograph", quietly = TRUE)) "Rphenograph" 
-    else NA_character_
-  }
-  
-  if (identical(phenograph.engine, "FastPG")) {
-    
-    cat("Clustering data with Phenograph (via FastPG)\n")
-    
-    links <- FastPG::rcpp_parallel_jce( dmrd.knn$idx )
-    links <- FastPG::dedup_links( links )
-    clusters <- FastPG::parallel_louvain( links )
-    
-    phenograph.event.cluster <- factor(clusters$communities)
-    
-  } else if (identical(phenograph.engine, "Rphenograph")) {
-    
-    cat("Clustering data with Phenograph (via Rphenograph fallback,\n
-since FastPG isn't available on this system)\n
-Note: Rphenograph builds its own nearest-neighbor graph directly from the\n
-reduced data rather than reusing the UMAP neighbor graph the way FastPG\n
-does, so cluster boundaries may differ slightly from a FastPG run on the\n
-same data.\n")
-    
-    rphenograph.out <- Rphenograph::Rphenograph( dmrd.data, k = fcs.tsne.perplexity )
-    phenograph.event.cluster <- factor( igraph::membership( rphenograph.out[[2]] ) )
-    
-  } else {
-    stop("Neither FastPG nor Rphenograph is installed, so Phenograph clustering\n
-isn't available. Please re-run flowcytoscript_startup.r, or choose FlowSOM\n
-instead when prompted for a clustering method.")
-  }
+  phenograph.event.cluster <- factor(clusters$communities)
   
   fcs.cluster.n <- length(unique(phenograph.event.cluster))
   phenograph.cluster.rank <- 1 + fcs.cluster.n - 
@@ -253,6 +221,7 @@ species.options <- c("Mouse", "Human")
 species.used <- menu( c("Mouse", "Human"), 
                       title = "Please select the species your cells come from. ")
 
+cell.marker.filename <- paste0(species.options[species.used], "_marker_names.csv")
 cell.type.filename <- paste0(species.options[species.used], "_celltype_database.xlsx")
 
 cell.database <- read_xlsx( file.path(fcs.src.dir, cell.type.filename) )
@@ -261,24 +230,20 @@ cell.database <- read_xlsx( file.path(fcs.src.dir, cell.type.filename) )
 
 cat("\n
 To identify tissue-specific cell types, tell the script which tissue sources
-you've used. Immune cell types are always included automatically, since immune
-cells are found in every tissue, so you only need to select any additional,
-tissue-specific sources here.")
+you've used. Immune cells is the default, so include this in addition to any
+extra sources you've used.")
 tissue.options <- unique(cell.database$Tissue.restricted)
 tissue.type <- multi.menu( tissue.options, title = "Select the tissue or tissues your cells come from. ")
 
 tissue.type <- unique(cell.database$Tissue.restricted)[tissue.type]
 
-# combine whatever was selected with "Immune", rather than requiring the user
-# to remember to select Immune every time alongside other tissues. If nothing
-# was selected, fall back to using every tissue in the database.
-if ( length(tissue.type) == 0 ){
-  tissue.type <- unique(cell.database$Tissue.restricted)
+if ( length(tissue.type) > 1 ){
+  cell.database <- dplyr::filter(cell.database, Tissue.restricted %in% tissue.type)
+} else if ( tissue.type == 0 ){
+  cell.database <- cell.database
 } else {
-  tissue.type <- union("Immune", tissue.type)
+  cell.database <- dplyr::filter(cell.database, Tissue.restricted %in% tissue.type)
 }
-
-cell.database <- dplyr::filter(cell.database, Tissue.restricted %in% tissue.type)
 
 
 # restrict cell ID based on known input-------
@@ -290,21 +255,23 @@ selected.cell.type <- unique(cell.database$Parent.cell.type)[selected.cell.type]
 
 
 # match markers to database----------
-source( file.path( fcs.src.dir, "match_markers.R" ) )
+marker.synonyms <- read.csv( file.path(fcs.src.dir, cell.marker.filename) )
 
-marker.database <- read.csv( file.path( fcs.src.dir, "marker_database.csv" ) )
+rownames(marker.synonyms) <- marker.synonyms$Marker.Name
+marker.synonyms <- marker.synonyms %>% select(-Marker.Name)
+colnames(marker.synonyms) <- NULL
+marker.synonyms <- setNames(split(marker.synonyms, 
+                                  seq(nrow(marker.synonyms))), 
+                            rownames(marker.synonyms))
+marker.synonyms <- lapply(marker.synonyms, as.list)
 
-new.marker.names <- match.markers( fcs.channel.label, marker.database )
-new.marker.names <- unname( new.marker.names[ fcs.channel.label ] )  # keep original channel order
-
-# fall back to the original channel label wherever no match was found, rather than
-# dropping/failing on that channel
-unmatched <- new.marker.names == ""
-if ( any( unmatched ) ) {
-  cat( "No marker match found for the following channel(s) — keeping the original label:\n" )
-  print( fcs.channel.label[ unmatched ] )
-  new.marker.names[ unmatched ] <- fcs.channel.label[ unmatched ]
-}
+new.marker.names <- sapply( 1:length(fcs.channel.label), function(x){
+  pattern <- ifelse(grepl("\\(", fcs.channel.label[x]), 
+                    gsub("([()])","\\\\\\1", fcs.channel.label[x]), 
+                    paste0( fcs.channel.label[x], "\\b"))
+  names(marker.synonyms)[grep(pattern, marker.synonyms,
+                              ignore.case = TRUE)]
+} )
 
 match.n <- sapply(new.marker.names, length)
 
@@ -325,20 +292,14 @@ new.marker.names <- unlist(new.marker.names)
 flow.data.cluster.median <- apply( dmrd.data, 2, tapply, 
                                    dmrd.event.cluster, median )
 
-# z-score each marker across clusters
-safe.scale <- function(x){
-  marker.mean <- colMeans(x, na.rm = TRUE)
-  marker.sd <- apply(x, 2, sd, na.rm = TRUE)
-  marker.sd[ is.na(marker.sd) | marker.sd == 0 ] <- 1
-  sweep( sweep(x, 2, marker.mean, "-"), 2, marker.sd, "/" )
-}
-
-scaled.fcs.cluster.median <- safe.scale(flow.data.cluster.median)
+scaled.fcs.cluster.median <- scale(flow.data.cluster.median, scale = FALSE)
 
 colnames(scaled.fcs.cluster.median) <- new.marker.names
 
 # prepare marker lists and match clusters-----------
+
 source( file.path( fcs.src.dir, "prepare_marker_lists.r" ) )
+
 source( file.path( fcs.src.dir, "flow_cluster_id_score.r" ) )
 
 marker.list <- prepare_marker_lists( file.path( fcs.src.dir, cell.type.filename ), 
@@ -348,107 +309,25 @@ auto.fcs.cluster.label <- fcs.cluster.label
 
 
 # match clusters to cell type database
-scaled.id.score <- flow_cluster_id_score(t(scaled.fcs.cluster.median),
-                                         marker_pos = marker.list$markers_positive, 
-                                         marker_neg = marker.list$markers_negative,
-                                         marker_pos_weight = marker.list$markers_positive_weight,
-                                         marker_neg_weight = marker.list$markers_negative_weight )
 
-# assign each cluster its best-matching cell type, and separately record how
-# confident that call is: the gap between the top and second-best score.
-# Higher values mean more confident (the top cell type won by a wider
-# margin); a low value means two (or more) cell types matched the cluster
-# almost equally well, so the automated label is more likely to be wrong and
-# worth checking by eye against the density plots / cluster ID heatmaps.
-cluster.id.confidence <- rep(NA_real_, ncol(scaled.id.score))
+scaled.id.score <- flow_cluster_id_score(t(scaled.fcs.cluster.median),
+                                                 marker_pos = marker.list$markers_positive, 
+                                                 marker_neg = marker.list$markers_negative )
 
 for (cluster in 1:ncol(scaled.id.score)){
-  ranked.scores <- sort(scaled.id.score[,cluster], decreasing = TRUE)
-  auto.fcs.cluster.label[cluster] <- names(ranked.scores)[1]
-  cluster.id.confidence[cluster] <- if (length(ranked.scores) > 1){
-    ranked.scores[1] - ranked.scores[2]
-  } else {
-    Inf
-  }
+  auto.fcs.cluster.label[cluster] <- names( which.max(scaled.id.score[,cluster]) )
 }
 
 # plot heatmaps of cluster ID scores--------
-# flag clusters whose top two candidate cell types were close in score, i.e.
-# had a low confidence value. This threshold is a rule of thumb, not a
-# statistical cutoff - it exists to draw attention to the clusters most
-# worth double-checking manually, not to replace that check.
-fcs.cluster.id.low.confidence.threshold <- 1
 
-low.confidence.clusters <- which(cluster.id.confidence < fcs.cluster.id.low.confidence.threshold)
+jpeg( file.path(fcs.density.figure.dir, "cluster_id_heatmap.jpg"), 
+      width = 1000, height = 1000 )
+heatmap(scaled.id.score, Rowv = NA, Colv = NA, scale = "none",
+        margins = c(5,10),
+        xlab = "Clusters", ylab = "matching cell types")
+dev.off()
 
-cat("\n")
-if (length(low.confidence.clusters) > 0){
-  cat("The following clusters had a close call between their top two matching cell types.
-The automated label is still the best match found, but it's worth checking these
-against the cluster ID heatmaps and density plots before finalizing names:\n")
-  for (cluster in low.confidence.clusters){
-    ranked.scores <- sort(scaled.id.score[,cluster], decreasing = TRUE)
-    cat(sprintf("  Cluster %s: %s (score %.2f) vs %s (score %.2f)\n",
-                colnames(scaled.id.score)[cluster],
-                names(ranked.scores)[1], ranked.scores[1],
-                names(ranked.scores)[2], ranked.scores[2]))
-  }
-} else {
-  cat("All clusters had a clear best-matching cell type (no close calls).\n")
-}
-cat("\n")
-
-# save the confidence score alongside the automated labels for later
-# reference. Higher confidence means more likely to be correct.
-cluster.id.confidence.table <- data.frame(
-  cluster = colnames(scaled.id.score),
-  auto.label = auto.fcs.cluster.label,
-  confidence = cluster.id.confidence
-)
-
-write.csv(cluster.id.confidence.table,
-          file = file.path(fcs.cluster.id.figure.dir, "cluster_id_confidence.csv"),
-          row.names = FALSE)
-
-# also save the full matching score matrix (every candidate cell type against
-# every cluster), not just the winning label, so the underlying numbers can
-# be reviewed alongside the heatmaps below
-write.csv(scaled.id.score,
-          file = file.path(fcs.cluster.id.figure.dir, "cluster_id_score_matrix.csv"))
-
-# heatmap with the underlying score for each cell type / cluster combination
-# printed on top of each cell, in the original (unclustered) row/column order
-plot_score_heatmap_with_values <- function(score.matrix, file.name, width = 1000, height = 1000){
-  n.row <- nrow(score.matrix)
-  n.col <- ncol(score.matrix)
-  
-  # image() draws row 1 at the bottom of the plot, so flip the row order
-  # here to keep row 1 (first cell type) at the top, as in a normal table
-  plot.matrix <- score.matrix[n.row:1, , drop = FALSE]
-  
-  jpeg( file.name, width = width, height = height )
-  par( mar = c(8, 14, 2, 4) )
-  
-  image( x = 1:n.col, y = 1:n.row, z = t(plot.matrix),
-         col = fcs.heatmap.palette, axes = FALSE, xlab = "", ylab = "" )
-  
-  axis( 1, at = 1:n.col, labels = colnames(score.matrix), las = 2, cex.axis = 0.9 )
-  axis( 2, at = 1:n.row, labels = rownames(plot.matrix), las = 2, cex.axis = 0.9 )
-  
-  for (row in 1:n.row){
-    for (col in 1:n.col){
-      text( col, row, sprintf("%.2f", plot.matrix[row, col]), cex = 0.7 )
-    }
-  }
-  
-  box()
-  dev.off()
-}
-
-plot_score_heatmap_with_values(scaled.id.score,
-                               file.path(fcs.cluster.id.figure.dir, "cluster_id_heatmap.jpg"))
-
-jpeg( file.path(fcs.cluster.id.figure.dir, "cluster_id_heatmap_dendro.jpg"), 
+jpeg( file.path(fcs.density.figure.dir, "cluster_id_heatmap_dendro.jpg"), 
       width = 1000, height = 1000 )
 heatmap(scaled.id.score, scale = "none",
         margins = c(5,10),
@@ -456,7 +335,9 @@ heatmap(scaled.id.score, scale = "none",
 dev.off()
 
 
+
 # differentiate similar clusters by variable markers----------------
+
 rownames(flow.data.cluster.median) <- auto.fcs.cluster.label
 colnames(flow.data.cluster.median) <- fcs.channel.label
 
@@ -495,21 +376,30 @@ for (cluster.group in non.unique.groups) {
           rownames(flow.data.cluster.median)[as.numeric(names(position.in.cluster.list))] <- rownames(flow.data.cluster.median)[as.numeric(names(position.in.cluster.list))]
         }
     }
+    
   }
+  
 }
 
 # set names as fcs.cluster.label
 fcs.cluster.label <- rownames(flow.data.cluster.median)
 
+
 cat("
     Plotting histograms for each marker for samples...\n")
+
 source( file.path( fcs.src.dir, "plot_data_histograms.r") )
+
 cat("
     Plotting histograms for each marker for clusters...\n")
+
 source( file.path( fcs.src.dir, "plot_cluster_histograms.r") ) 
+
 cat("\n")
 
+
 # give option to rename clusters--------
+
 happy.with.cluster.names <- 0
 
 while( happy.with.cluster.names !=1){
@@ -522,9 +412,11 @@ while( happy.with.cluster.names !=1){
     }
     
     cat("\n")
+    
     cat(
       "Your clusters will be named as follows: 
       \n")
+    
     cat( paste0(fcs.cluster.label, collapse = "\n"))
     cat( "\n" )
     cat( "\n" )
@@ -534,10 +426,13 @@ while( happy.with.cluster.names !=1){
   } else if (clusters.to.rename == 0){
       happy.with.cluster.names <- 1
       
+      
       cat("\n")
+      
       cat(
         "Your clusters will be named as follows: 
       \n")
+      
       cat( paste0(fcs.cluster.label, collapse = "\n"))
       
     } else{
@@ -545,10 +440,13 @@ while( happy.with.cluster.names !=1){
       fcs.cluster.label[cluster] <- readline(paste0("Please enter a new name for the cluster currently called ", fcs.cluster.label[cluster], ": ") )
       }
       
+      
       cat("\n")
+      
       cat(
         "Your clusters will be named as follows: 
         \n")
+
       cat( paste0(fcs.cluster.label, collapse = "\n"))
       cat( "\n" )
       cat( "\n" )
@@ -582,16 +480,21 @@ write.csv( flow.cluster.percent, file = file.path( fcs.cluster.table.dir,
                                                    sprintf( "%s.csv", "cluster_proportions" ) ) )
 
 # plot density distributions of clusters with new names---------------
+
 # plot density distributions by cluster
+
 if( length(clusters.to.rename) > 1){
   cat("
     Plotting histograms for each marker for clusters...\n")
+  
   source( file.path( fcs.src.dir, "plot_cluster_histograms.r") ) 
 } else if (clusters.to.rename != 0){
   cat("
     Plotting histograms for each marker for clusters...\n")
+  
   source( file.path( fcs.src.dir, "plot_cluster_histograms.r") ) 
 }
+
 
 setup.end.time <- Sys.time()
 setup.time <- round(difftime(setup.end.time, setup.start.time, units='mins'), 2)

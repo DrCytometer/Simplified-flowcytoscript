@@ -57,9 +57,6 @@ fcs.density.figure.dir <- "./figure_density"
 fcs.density.figure.sample <- "density_sample"
 fcs.density.figure.cluster <- "density_cluster"
 
-# cluster ID parameters---------------
-
-fcs.cluster.id.figure.dir <- "./cluster_id"
 
 # cluster parameters---------------
 
