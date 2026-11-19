@@ -50,11 +50,11 @@ set.seed.here <- function( seed.base, seed.char )
 
 source( file.path( fcs.src.dir, "ce_diff_test.r" ) )
 source( file.path( fcs.src.dir, "ce_diff_test_tsne.r" ) )
-source( file.path( fcs.src.dir, "ce_diff_test_umap.r" ) )
-source( file.path( fcs.src.dir, "plot_cluster_dmrd.r" ) )
+source( file.path( fcs.src.dir, "ce_diff_test_umap.R" ) )
+source( file.path( fcs.src.dir, "plot_cluster_dmrd.R" ) )
 source( file.path( fcs.src.dir, "plot_all_dmrd_figures.r" ) )
 source( file.path( fcs.src.dir, "plot_dimensionality_reduction.r" ) )
-source( file.path( fcs.src.dir, "plot_changed_regions.r" ) )
+source( file.path( fcs.src.dir, "plot_changed_regions.R" ) )
 
 if (Be.Chatty == TRUE){
   cat(

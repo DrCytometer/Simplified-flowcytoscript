@@ -278,7 +278,7 @@ fcs.use.cached.results <- TRUE
 fcs.sample.number.width <- 2
 fcs.event.number.width <- 6
 
-source( file.path( fcs.src.dir, "flowcytoscript_graphics_parameters.r" ) )
+source( file.path( fcs.src.dir, "flowcytoscript_graphics_parameters.R" ) )
 
 
 

@@ -338,8 +338,8 @@ scaled.fcs.cluster.median <- safe.scale(flow.data.cluster.median)
 colnames(scaled.fcs.cluster.median) <- new.marker.names
 
 # prepare marker lists and match clusters-----------
-source( file.path( fcs.src.dir, "prepare_marker_lists.r" ) )
-source( file.path( fcs.src.dir, "flow_cluster_id_score.r" ) )
+source( file.path( fcs.src.dir, "prepare_marker_lists.R" ) )
+source( file.path( fcs.src.dir, "flow_cluster_id_score.R" ) )
 
 marker.list <- prepare_marker_lists( file.path( fcs.src.dir, cell.type.filename ), 
                                              tissue.type, selected.cell.type )
@@ -503,10 +503,10 @@ fcs.cluster.label <- rownames(flow.data.cluster.median)
 
 cat("
     Plotting histograms for each marker for samples...\n")
-source( file.path( fcs.src.dir, "plot_data_histograms.r") )
+source( file.path( fcs.src.dir, "plot_data_histograms.R") )
 cat("
     Plotting histograms for each marker for clusters...\n")
-source( file.path( fcs.src.dir, "plot_cluster_histograms.r") ) 
+source( file.path( fcs.src.dir, "plot_cluster_histograms.R") ) 
 cat("\n")
 
 # give option to rename clusters--------
@@ -586,11 +586,11 @@ write.csv( flow.cluster.percent, file = file.path( fcs.cluster.table.dir,
 if( length(clusters.to.rename) > 1){
   cat("
     Plotting histograms for each marker for clusters...\n")
-  source( file.path( fcs.src.dir, "plot_cluster_histograms.r") ) 
+  source( file.path( fcs.src.dir, "plot_cluster_histograms.R") ) 
 } else if (clusters.to.rename != 0){
   cat("
     Plotting histograms for each marker for clusters...\n")
-  source( file.path( fcs.src.dir, "plot_cluster_histograms.r") ) 
+  source( file.path( fcs.src.dir, "plot_cluster_histograms.R") ) 
 }
 
 setup.end.time <- Sys.time()

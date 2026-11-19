@@ -334,7 +334,7 @@ dev.off()
 
 # run ANOVA with Tukey's post-test on marker MFIs and cluster frequencies-------
 
-source( file.path( fcs.src.dir, "flowcytoscript_anova.r") )
+source( file.path( fcs.src.dir, "flowcytoscript_anova.R") )
 
 
 # calculate tsne representation---------------
