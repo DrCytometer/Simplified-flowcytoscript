@@ -84,15 +84,9 @@ Original publication on the [Crossentropy test](https://www.cell.com/cell-report
 For CyTOF (Helios) data, ArcSinh with a co-factor of 5 is used. 
 ```arcsinhTransform(a=1, b=1/5, c=0)
 ```
-For flow cytometry data, a FlowJo-style biexponential transformation is used. In
-the updated version, the scaling of the transformation adapts to best fit your 
-data. This is done by setting the width basis (amount of compression around zero)
-based on the 5th percentile of the data below zero, as per the original paper
-on the biexponential transform.
-
-Since this isn't perfect, we set some safeguards on the automation. To start, we
-employ some prior knowledge about optimal settings on a cytometer-specific basis,
-using the following coefficients as starting points:
+For flow cytometry data, a FlowJo-style biexponential transformation is used,
+with fixed cytometer-specific coefficients. The cytometer is identified from the 
+`$CYT` keyword in the first FCS file, and the following coefficients are applied:
 
 Aurora:
 ```
@@ -112,7 +106,7 @@ width.basis <- -1000
 max.value <- 3162277.6602
 log.decades <- 5
 ```
-ZE5:
+Bio-Rad ZE5 (`$CYT` keyword "EVEREST"):
 ```
 width.basis <- -50
 max.value <- 262144
@@ -131,12 +125,11 @@ optimized your panel by visually inspecting the staining and adjusting marker
 intensity/separation based on what you can see. These transforms will be best 
 for panels that are relatively large for the cytometer.
 
-There are then limits on how much or how little compression there can be.
-
-The data scaling also optimizes the range over which the data are displayed. This
-means that we try to put all the markers on effectively the same scale, centering
-the negatives around zero and weighting the input of the markers equally to the
-dimensionality reduction and clustering algorithms.
+The same transform is applied to every selected channel. After transformation, 
+the data are shifted so that the negative population sits around zero. The 
+transformed data are plotted in `figure_density/transformed_fcs_data.jpg` so you
+can check the scaling. If the automatic scaling doesn't suit your data, export
+CSV channel values from FlowJo with your own biexponential settings instead.
 
 There will be problems under the following circumstances:
 * Improperly compensated or unmixed data with extreme negative values.
