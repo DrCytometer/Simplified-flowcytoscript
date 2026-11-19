@@ -35,11 +35,11 @@ You'll get a warning if anything fails to install properly.
 
 ```{r Install any missing packages}
 fcs.data.dir <- "./Data"
-fcs.src.dir <- "/Users/oliverburton/Bioinformatics/FlowCytoScript/00_source_files"
+fcs.src.dir <- "./00_source_files"
 message.delay.time <- 1
 Be.Chatty <- TRUE
 
-source( file.path( fcs.src.dir, "flowcytoscript_startup.r") )
+source( file.path( fcs.src.dir, "flowcytoscript_startup.R") )
 ```
 
 
@@ -47,7 +47,7 @@ source( file.path( fcs.src.dir, "flowcytoscript_startup.r") )
 # 2) Load packages, check for data and source files
 
 ```{r Load packages}
-source( file.path( fcs.src.dir, "flowcytoscript_load_runchecks.r") )
+source( file.path( fcs.src.dir, "flowcytoscript_load_runchecks.R") )
 ```
 
 
@@ -64,7 +64,7 @@ the type of cytometer you've used.
 If you make any mistakes here, you can re-run this chunk and try again.
 
 ```{r Define experiment}
-source( file.path( fcs.src.dir, "flowcytoscript_define_experiment.r") )
+source( file.path( fcs.src.dir, "flowcytoscript_define_experiment.R") )
 ```
 
 # 4) Clustering
@@ -82,7 +82,7 @@ You'll get the option to rename any clusters.
 
 
 ```{r Clustering}
-source( file.path( fcs.src.dir, "flowcytoscript_clustering.r") )
+source( file.path( fcs.src.dir, "flowcytoscript_clustering.R") )
 ```
 
 
@@ -92,7 +92,7 @@ source( file.path( fcs.src.dir, "flowcytoscript_clustering.r") )
 You can take a break while it runs, although it may only be a couple of minutes.
 
 ```{r Run the analysis}
-source( file.path( fcs.src.dir, "flowcytoscript_run_analysis.r") )
+source( file.path( fcs.src.dir, "flowcytoscript_run_analysis.R") )
 ```
 
 
